@@ -38,7 +38,55 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png",
+      "display": "standalone",
+      "themeColor": "#2E7D32",
+      "backgroundColor": "#ffffff",
+      "scope": "/",
+      "startUrl": "/",
+      "manifest": {
+        "name": "POS HewAgri",
+        "short_name": "HewAgri POS",
+        "description": "Point of Sale HewAgri - Application de vente pour KivuGreen",
+        "orientation": "portrait",
+        "display": "standalone",
+        "theme_color": "#2E7D32",
+        "background_color": "#ffffff",
+        "scope": "/",
+        "start_url": "/",
+        "icons": [
+          {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+          },
+          {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+          }
+        ],
+        "categories": ["business", "productivity", "finance"],
+        "shortcuts": [
+          {
+            "name": "Nouvelle Vente",
+            "short_name": "Vente",
+            "description": "Commencer une nouvelle vente",
+            "url": "/",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+          },
+          {
+            "name": "Scanner Produit",
+            "short_name": "Scanner",
+            "description": "Scanner un code-barres",
+            "url": "/scanner",
+            "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+          }
+        ]
+      }
     },
     "plugins": [
       [

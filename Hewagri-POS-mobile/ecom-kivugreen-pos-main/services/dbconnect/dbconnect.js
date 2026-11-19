@@ -1,18 +1,23 @@
-import * as SQLite from "expo-sqlite";
+import { Platform } from 'react-native';
 
-const openDatabase = () => {
-    if (Platform.OS === "web") {
-      return {
-        transaction: () => {
-          return {
-            executeSql: () => {},
-          };
-        },
-      };
-    }
-  
-    const db = SQLite.openDatabase("__db_balabala_mobile_app.db");
-    return db;
-};
+// Import conditionnel selon la plateforme
+let db;
 
-export const db = openDatabase();
+if (Platform.OS === 'web') {
+  // Sur Web, utiliser l'adaptateur IndexedDB
+  const webDb = require('./dbconnect.web').default;
+  db = webDb;
+} else {
+  // Sur Native, utiliser SQLite
+  import * as SQLite from "expo-sqlite";
+
+  const openDatabase = () => {
+    const database = SQLite.openDatabase("__db_balabala_mobile_app.db");
+    return database;
+  };
+
+  db = openDatabase();
+}
+
+export const db = db;
+export default db;

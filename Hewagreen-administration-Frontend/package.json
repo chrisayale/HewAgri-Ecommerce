@@ -52,6 +52,7 @@
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "embla-carousel-react": "^8.0.2",
+    "framer-motion": "^14.14.0",
     "input-otp": "^1.2.4",
     "js-cookie": "^3.0.5",
     "jspdf": "^2.5.1",
@@ -86,6 +87,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.2",
     "postcss": "^8",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

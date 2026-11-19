@@ -38,8 +38,9 @@ export const __controllerUsers = {
 
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -199,8 +200,9 @@ export const __controllerUsers = {
             //     return Responder(res, HttpStatusCode.NotAcceptable, "Invalid phone value: NaN");
             // }
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -411,8 +413,9 @@ export const __controllerUsers = {
         const { phone, verification_code, password } = req.body
         if (!phone || !verification_code || !password) return Responder(res, HttpStatusCode.NotAcceptable, "This request must have at least ! phone in body ")
         try {
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -642,8 +645,9 @@ export const __controllerUsers = {
 
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -773,8 +777,9 @@ export const __controllerUsers = {
 
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1073,8 +1078,9 @@ export const __controllerUsers = {
         try {
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1153,8 +1159,9 @@ export const __controllerUsers = {
         try {
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1237,8 +1244,9 @@ export const __controllerUsers = {
         try {
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1311,8 +1319,9 @@ export const __controllerUsers = {
         try {
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1392,8 +1401,9 @@ export const __controllerUsers = {
         try {
             const transaction = await connect.transaction();
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Provinces.hasOne(Users, { foreignKey: "id" });
             Users.belongsTo(Provinces, { foreignKey: "idprovince" });
@@ -1454,8 +1464,9 @@ export const __controllerUsers = {
         try {
             Users.hasOne(Extras, { foreignKey: "id_user" })
 
-            Users.belongsToMany(Roles, { through: Hasroles });
-            Roles.belongsToMany(Users, { through: Hasroles });
+            // Associations déjà initialisées dans src/__models/associations.ts
+            // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
+            // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
 
             Users.findOne({
                 include: [

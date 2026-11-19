@@ -4,7 +4,7 @@
   "description": "Ecommerce app de kivugreen, ",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/server/index.js",
+    "start": "node ./dist/__server/index.js",
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only ./src/__server/",
     "postinstall": "node-config-ts"

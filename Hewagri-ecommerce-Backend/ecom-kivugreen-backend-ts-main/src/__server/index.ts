@@ -14,8 +14,12 @@ import { routes } from "../__routes/index";
 import { ServiceImage } from '../__services/services.images';
 import { log } from 'console';
 import { Server, Socket } from 'socket.io';
+import { initAssociations } from '../__models/associations';
 
 dotenv.config();
+
+// Initialiser les associations Sequelize une seule fois au démarrage
+initAssociations();
 
 const { APP_NAME, APP_PORT, APP_VERSION } = process.env;
 

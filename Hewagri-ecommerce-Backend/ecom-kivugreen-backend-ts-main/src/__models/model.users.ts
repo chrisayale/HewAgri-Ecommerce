@@ -63,6 +63,9 @@ export const Users = connect.define<User>('__tbl_ecom_users', {
     ]
 });
 
+// Les associations seront définies dans un fichier d'initialisation séparé
+// pour éviter les problèmes de redéfinition dynamique dans les contrôleurs
+
 Users.sync({ alter: true })
     .then(() => {
         console.log('=======> Cerated done `table Users` ');
