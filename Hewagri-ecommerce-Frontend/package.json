@@ -1,0 +1,49 @@
+{
+  "name": "kvg-e-commerce",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 4004",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.8",
+    "@emailjs/browser": "^4.4.1",
+    "@headlessui/react": "^2.1.2",
+    "@heroicons/react": "^2.1.5",
+    "@nextui-org/react": "^2.4.6",
+    "@reduxjs/toolkit": "^2.2.7",
+    "axios": "^1.7.4",
+    "framer-motion": "^11.3.24",
+    "next": "14.2.5",
+    "next-themes": "^0.3.0",
+    "nookies": "^2.5.2",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-icons": "^5.2.1",
+    "react-qr-code": "^2.0.15",
+    "react-redux": "^9.1.2",
+    "react-to-print": "^2.15.1",
+    "react-toastify": "^10.0.5",
+    "redux-persist": "^6.0.0",
+    "sharp": "^0.33.5",
+    "sweetalert2": "^11.14.0",
+    "sweetalert2-react-content": "^5.0.7",
+    "swiper": "^11.1.9",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5",
+    "webpack": "^5.94.0"
+  }
+}
