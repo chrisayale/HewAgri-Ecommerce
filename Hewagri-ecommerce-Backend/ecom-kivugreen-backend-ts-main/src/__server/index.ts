@@ -38,27 +38,42 @@ const io = new Server(server, {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+const corsOptions = {
+    origin: [
+        "http://localhost:3000",    // Frontend Client
+        "http://localhost:4003",    // Frontend Admin
+        "http://localhost:4005",    // Mobile POS PWA
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:4003",
+        "http://127.0.0.1:4005",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "x-ecommerce-kgreen-api", "x-ecommerce-mobkgreen-api"],
+};
+
+app.use(cors(corsOptions));
 
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
 }));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    const { url, method, body, query, params, ip, ips } = req
-    log("::: Req ::: ", JSON.stringify({
-        url,
-        method,
-        body,
-        query,
-        params,
-        ip,
-        ips
-    }))
+    // Ne pas écraser les headers CORS déjà définis par cors()
+    // Surtout pour les requêtes OPTIONS (preflight)
+    if (req.method !== 'OPTIONS') {
+        const { url, method, body, query, params, ip, ips } = req
+        log("::: Req ::: ", JSON.stringify({
+            url,
+            method,
+            body,
+            query,
+            params,
+            ip,
+            ips
+        }))
+    }
     next();
-    // return Responder(res, HttpStatusCode.Ok, req.body)
 });
 
 app.use(morgan("combined", { stream: ___logAccess }));

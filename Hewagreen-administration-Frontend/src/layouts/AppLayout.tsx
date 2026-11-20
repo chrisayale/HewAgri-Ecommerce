@@ -97,7 +97,7 @@ const AppLayout = ({
   const userMenu = (
     <Menu>
       <Menu.Item key="profile">
-        <Link href="/profil">
+        <Link href="/profil" className="flex items-center gap-2">
           <UserOutlined /> Profil
         </Link>
       </Menu.Item>
@@ -106,15 +106,12 @@ const AppLayout = ({
           title="Déconnexion"
           description="Voulez-vous vraiment vous déconnecter"
           onConfirm={confirm}
-          // onCancel={cancel}
           okText="Déconnexion"
           cancelText="Non"
-
         >
-          <p className=" flex items-center text-base gap-2">
+          <p className="flex items-center text-base gap-2">
             <BiLogOut size={20} /> Déconnexion
           </p>
-
         </Popconfirm>
       </Menu.Item>
     </Menu>
@@ -138,6 +135,7 @@ const AppLayout = ({
               width={150}
               height={140}
               alt="log"
+              style={{ width: 'auto', height: 'auto' }}
             />
             {/* <p className=" text-xl font-bold text-green-700">
               {collapsed ? "" : "HewAgri"}

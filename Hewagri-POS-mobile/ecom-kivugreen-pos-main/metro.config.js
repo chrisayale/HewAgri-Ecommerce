@@ -19,6 +19,8 @@ config.resolver.sourceExts = [...config.resolver.sourceExts, 'cjs'];
 // Alias pour les modules natifs non compatibles Web
 config.resolver.alias = {
   ...config.resolver.alias,
+  // Critical: alias react-native to react-native-web for web platform
+  'react-native': 'react-native-web',
   'expo-sqlite': path.resolve(__dirname, 'services/dbconnect/dbconnect.web.js'),
   'react-native-pos-printer': path.resolve(__dirname, 'services/printer.web.js'),
   'expo-barcode-scanner': path.resolve(__dirname, 'components/Scanner/ScannerComponent.web.jsx'),
@@ -34,6 +36,6 @@ config.resolver.alias = {
   // Fix for missing PlatformColorValueTypes in react-native web
   './PlatformColorValueTypes': path.resolve(__dirname, 'services/PlatformColorValueTypes.web.js'),
   'react-native/Libraries/StyleSheet/PlatformColorValueTypes': path.resolve(__dirname, 'services/PlatformColorValueTypes.web.js'),
-};
+  };
 
 module.exports = config;

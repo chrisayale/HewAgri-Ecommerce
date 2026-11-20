@@ -17,9 +17,43 @@ import { GiDeathStar } from "react-icons/gi";
 import { CgProductHunt } from "react-icons/cg";
 import { ResponseDashboard } from "@/types";
 import { BiCustomize } from "react-icons/bi";
+import { Box, Skeleton, Grid } from "@mui/material";
 
-const Dashboard = ({ data }: { data: any }) => {
-  console.log(data);
+const Dashboard = ({ data }: { data: ResponseDashboard | undefined }) => {
+  // Afficher un squelette pendant le chargement
+  if (!data) {
+    return (
+      <div className="flex-grow px-1 py-4 overflow-auto">
+        <Grid container spacing={6} className="xl:grid xl:grid-cols-4 gap-6 flex flex-col">
+          {/* Cartes de stats - Skeleton */}
+          <Grid item xs={12} xl={4}>
+            <Grid container spacing={6} className="xl:grid xl:grid-cols-4 gap-6 flex flex-col md:grid md:grid-cols-2">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Grid key={i} item xs={12} sm={6} xl={3}>
+                  <Skeleton variant="rectangular" height={120} className="bg-white shadow-md rounded-md" />
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+
+          {/* Pie Chart - Skeleton */}
+          <Grid item xs={12} xl={4} className="min-[1600px]:col-span-1">
+            <Skeleton variant="rectangular" height={400} className="bg-white shadow-md rounded-md p-2" />
+          </Grid>
+
+          {/* Bar Chart - Skeleton */}
+          <Grid item xs={12} xl={12} className="min-[1600px]:col-span-3">
+            <Skeleton variant="rectangular" height={450} className="bg-white shadow-md rounded-md p-2" />
+          </Grid>
+        </Grid>
+      </div>
+    );
+  }
+
+  // Si les données existent mais sont incomplètes
+  const stats = data.data?.stats;
+  const details = data.data?.details;
+
   return (
     <div>
       <div className="flex-grow px-1 py-4 overflow-auto ">
@@ -36,8 +70,8 @@ const Dashboard = ({ data }: { data: any }) => {
                       className=" text-cyan-600"
                     />
                   }
-                  value={data?.data?.stats?.cooperatives}
-                  percent={data?.data?.stats?.cooperatives / 100}
+                  value={stats?.cooperatives ?? 0}
+                  percent={stats?.cooperatives ? stats.cooperatives / 100 : 0}
                   tag="citoyens"
                 />
               </div>
@@ -51,8 +85,8 @@ const Dashboard = ({ data }: { data: any }) => {
                       className=" text-blue-500"
                     />
                   }
-                  value={data?.data?.stats?.products}
-                  percent={data?.data?.stats?.products / 100}
+                  value={stats?.products ?? 0}
+                  percent={stats?.products ? stats.products / 100 : 0}
                   tag="homme"
                 />
               </div>
@@ -66,8 +100,8 @@ const Dashboard = ({ data }: { data: any }) => {
                       className=" text-teal-500"
                     />
                   }
-                  value={data?.data?.stats?.users}
-                  percent={data?.data?.stats?.users / 100}
+                  value={stats?.users ?? 0}
+                  percent={stats?.users ? stats.users / 100 : 0}
                   tag="femme"
                 />
               </div>
@@ -79,8 +113,8 @@ const Dashboard = ({ data }: { data: any }) => {
                   icon={
                     <ImManWoman fontSize="24px  " className=" text-green-600" />
                   }
-                  value={data?.data?.stats?.commandes}
-                  percent={data?.data?.stats?.commandes / 100}
+                  value={stats?.commandes ?? 0}
+                  percent={stats?.commandes ? stats.commandes / 100 : 0}
                   tag="mariés"
                 />
               </div>
@@ -94,8 +128,8 @@ const Dashboard = ({ data }: { data: any }) => {
                       className=" text-yellow-900"
                     />
                   }
-                  value={data?.data?.stats?.banks}
-                  percent={data?.data?.stats?.banks / 100}
+                  value={stats?.banks ?? 0}
+                  percent={stats?.banks ? stats.banks / 100 : 0}
                   tag="divorcés"
                 />
               </div>
@@ -109,8 +143,8 @@ const Dashboard = ({ data }: { data: any }) => {
                       className=" text-yellow-600"
                     />
                   }
-                  value={data?.data?.stats?.customers}
-                  percent={data?.data?.stats?.customers / 100}
+                  value={stats?.customers ?? 0}
+                  percent={stats?.customers ? stats.customers / 100 : 0}
                   tag="divorcés"
                 />
               </div>
@@ -119,33 +153,13 @@ const Dashboard = ({ data }: { data: any }) => {
           <div className="p-2 min-[1600px]:col-span-1 col-span-2 bg-white shadow-md  rounded-md">
             <PieBasicChart
               _data={data}
-              // dash={dash?.data}
             />
           </div>
-          {/* <div className=" p-2 col-span-4 bg-white  rounded-md">
-            <DashData
-            //  dash={dash?.data}
-            />
-          </div> */}
           <div className="  col-span-4 ">
             <div className=" w-full">
               <BasicChart data={data} />
             </div>
           </div>
-          {/* <div className=" p-2 col-span-4 bg-white rounded-md max-md:hidden ">
-            <div className="2xl:grid 2xl:grid-cols-4 gap-6">
-              <div className=" p-2 col-span-2 ">
-                <BasicChartCivil
-                //  dash={dash?.data}
-                />
-              </div>
-              <div className=" p-2 col-span-2 ">
-                <BasicChartAge
-                //  dash={dash?.data}
-                />
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

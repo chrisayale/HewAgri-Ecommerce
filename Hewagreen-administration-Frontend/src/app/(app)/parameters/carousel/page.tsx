@@ -419,7 +419,7 @@ const Carousel = () => {
                                                     <Image
                                                         className='form-control'
                                                         src={image_default}
-                                                        style={{ width: 150 }}
+                                                        style={{ width: 150, height: 'auto' }}
                                                         alt=""
                                                     />
                                                     <br />
@@ -605,7 +605,7 @@ const Carousel = () => {
                                     <Image
                                         className='form-control'
                                         src={image_default || image_default_name}
-                                        style={{ width: 150 }}
+                                        style={{ width: 150, height: 'auto' }}
                                         alt=""
                                     />
                                     <br />
