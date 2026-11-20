@@ -30,7 +30,7 @@ config.resolver.alias = {
   'rn-fetch-blob': path.resolve(__dirname, 'services/rnfetchblob.web.js'),
   'react-native-print': path.resolve(__dirname, 'services/printer.web.js'),
   'react-native-html-to-pdf': path.resolve(__dirname, 'services/htmltopdf.web.js'),
-  'react-native-snackbar': path.resolve(__dirname, 'services/snackbar.web.js'),
+  'react-native-snackbar': path.resolve(__dirname, 'src/mocks/react-native-snackbar.web.js'),
   // Fix for nanoid/non-secure ESM resolution issue
   'nanoid/non-secure': path.resolve(__dirname, 'services/nanoid-web.js'),
   // Fix for missing PlatformColorValueTypes in react-native web
