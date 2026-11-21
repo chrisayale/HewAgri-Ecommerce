@@ -18,7 +18,7 @@ export const HomeScreen = ({ navigation }) => {
     const [isloading, setisloading] = React.useState(false)
     const Consts = Colors;
     const tooltipRef = React.useRef(null);
-    const { num_enregistrement, phone, sigle, cooperative, adresse, __tbl_ecom_users, id: idcooperative } = global.coopec || {}
+    const { num_enregistrement, phone, sigle, cooperative, adresse, __tbl_ecom_users = [], id: idcooperative } = global.coopec || {}
 
     const __ = async () => {
         setisloading(true)
@@ -27,32 +27,34 @@ export const HomeScreen = ({ navigation }) => {
             url: `/cooperatives/cooperative/${idcooperative}`
         }, (err, done) => {
             setisloading(false)
+            console.log('[HomeScreen] Cooperative fetch response:', { err, done });
             if (done) {
                 const { status, message, data } = done;
                 if (status === 200) {
                     global.coopec = data;
+                    // Re-destructure with updated data
+                    const { num_enregistrement: newNumEnregistrement, phone: newPhone, sigle: newSigle, cooperative: newCooperative, adresse: newAdresse, __tbl_ecom_users: newUsers = [] } = data || {};
                     setinf({
                         // ...global.coopec,
-                        ...global['user'],
-                        num_enregistrement,
-                        phone,
-                        sigle,
-                        cooperative,
-                        adresse,
-                        nombre_membres: Array.from(__tbl_ecom_users).length
+                        ...(global['user'] || {}),
+                        num_enregistrement: newNumEnregistrement ?? num_enregistrement,
+                        phone: newPhone ?? phone,
+                        sigle: newSigle ?? sigle,
+                        cooperative: newCooperative ?? cooperative,
+                        adresse: newAdresse ?? adresse,
+                        nombre_membres: Array.from(newUsers).length
                     })
                 } else {
-                    setisloading(false)
                     Snackbar.show({
-                        text: "Une erreur est survenue lors de traitement des informations ! assurez vous d'être connecté sur internet avant de continuer",
+                        text: message || "Une erreur est survenue lors de traitement des informations !",
                         duration: Snackbar.LENGTH_LONG,
                         backgroundColor: Colors.dangerColor
                     });
                 }
             } else {
-                setisloading(false)
+                console.error('[HomeScreen] Cooperative fetch failed:', err);
                 Snackbar.show({
-                    text: "Une erreur est survenue lors de traitement des informations ! assurez vous d'être connecté sur internet avant de continuer",
+                    text: "Impossible de charger les données de la coopérative. Vérifiez votre connexion.",
                     duration: Snackbar.LENGTH_LONG,
                     backgroundColor: Colors.dangerColor
                 });
