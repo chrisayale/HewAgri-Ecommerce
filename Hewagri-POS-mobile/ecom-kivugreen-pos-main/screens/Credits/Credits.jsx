@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Title } from '../../components/Title/Title'
-import { RefreshControl, ScrollView, Text, TextInput, TouchableHighlight, View } from 'react-native';
+import { RefreshControl, ScrollView, Text, TextInput, TouchableHighlight, View, StyleSheet, Platform } from 'react-native';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import { Colors } from '../../assets/colors/Colors';
 import Snackbar from 'react-native-snackbar';
@@ -17,6 +17,40 @@ import { BarcodereaderComponenent } from '../../components/Scanner/ScannerCompon
 import { routes } from '../../assets/helper/helper.routes';
 import DialogBox from 'react-native-dialogbox';
 import DatePicker from 'react-native-date-picker';
+
+// Web-compatible DatePicker fallback
+const WebDatePicker = ({ open, date, onConfirm, onCancel, ...props }) => {
+  const [localDate, setLocalDate] = React.useState(date);
+
+  React.useEffect(() => {
+    if (open) {
+      // For web, we'll use a simple input type="date" approach
+      // The open prop is controlled by parent, so we don't need to do anything here
+    }
+  }, [open, date]);
+
+  const handleChange = (e) => {
+    const newDate = new Date(e.target.value);
+    setLocalDate(newDate);
+    onConfirm(newDate);
+  };
+
+  if (Platform.OS !== 'web') {
+    return null;
+  }
+
+  return (
+    <View style={styles.webDatePickerContainer}>
+      <input
+        type="date"
+        value={localDate ? localDate.toISOString().split('T')[0] : ''}
+        onChange={handleChange}
+        onBlur={onCancel}
+        style={styles.webDateInput}
+      />
+    </View>
+  );
+};
 
 export const CreditsScreen = ({ route, navigation }) => {
 
@@ -117,8 +151,8 @@ export const CreditsScreen = ({ route, navigation }) => {
     return (
         <>
             <Title navigation={navigation} title={"Demande de crédit"} subtitle={"Formulaire de demande de crédit"} />
-            <View style={{ backgroundColor: Colors.whiteColor }}>
-                <View style={{ width: "85%", alignSelf: "center", position: "absolute", top: 15, flex: 1, zIndex: 100, flexDirection: "column" }}>
+            <View style={styles.container}>
+                <View style={styles.segmentContainer}>
                     <SegmentedControl
                         tintColor={Colors.whiteColor}
                         style={{
@@ -147,132 +181,135 @@ export const CreditsScreen = ({ route, navigation }) => {
                             const { nativeEvent } = event;
                             const { selectedSegmentIndex } = nativeEvent;
                             setstep(selectedSegmentIndex)
-                            // alert(selectedSegmentIndex)
-                            // if (selectedSegmentIndex === 1) navigation.navigate(routes['qrcodereader'])
                         }}
                         activeStyle={{ borderRadius: 40 }}
                     />
                 </View>
                 <>
                     {step === 0 && (
-                        <View style={{ flexDirection: "column", alignSelf: "center", width: "100%", marginTop: 50, paddingTop: 8, paddingHorizontal: 5, backgroundColor: Colors.whiteColor }}>
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            showsHorizontalScrollIndicator={false}
+                            showsVerticalScrollIndicator={false}
+                            keyboardDismissMode='interactive'
+                            keyboardShouldPersistTaps="handled"
+                        >
                             {Object.keys(customer).length > 0 && (
-                                <View style={{ width: "85%", alignContent: "center", alignItems: "center", justifyContent: "center", alignSelf: "center", height: "auto", paddingVertical: 10, backgroundColor: Colors.primaryColor, marginTop: 25 }}>
-                                    <Text style={{ fontFamily: "mons", color: Colors.whiteColor }}>
-                                        <Text style={{ fontFamily: "mons-e" }}>Numéro de la carte : </Text>
+                                <View style={styles.customerCard}>
+                                    <Text style={styles.customerText}>
+                                        <Text style={styles.customerLabel}>Numéro de la carte : </Text>
                                         {customer && customer['__tbl_ecom_hasmember'] ? customer['__tbl_ecom_hasmember']['id'] : ""}
                                     </Text>
-                                    <Text style={{ fontFamily: "mons", color: Colors.whiteColor }}>
-                                        <Text style={{ fontFamily: "mons-e" }}>Membre : </Text>
+                                    <Text style={styles.customerText}>
+                                        <Text style={styles.customerLabel}>Membre : </Text>
                                         {customer && customer['nom'] ? String(customer['nom']).concat(" ").concat(customer['postnom']) : ""}
                                     </Text>
-                                    <Text style={{ fontFamily: "mons", color: Colors.whiteColor }}>
-                                        <Text style={{ fontFamily: "mons-e" }}>Contact Membre : </Text>
+                                    <Text style={styles.customerText}>
+                                        <Text style={styles.customerLabel}>Contact Membre : </Text>
                                         {customer && customer['phone'] ? String(customer['phone']) : ""}
                                     </Text>
                                 </View>
                             )}
-                            <ScrollView
-                                contentContainerStyle={{ paddingBottom: "100%", backgroundColor: Colors.whiteColor }}
-                                showsHorizontalScrollIndicator={false}
-                                showsVerticalScrollIndicator={false}
+                            <Formik
+                                key={2002}
+                                initialValues={{
+                                    key: 2002,
+                                    id_cooperative: idcooperative,
+                                    id_member: customer,
+                                    montant: '',
+                                    currency: '',
+                                    motif: '',
+                                    periode_remboursement: '',
+                                }}
+                                validationSchema={creditSchema}
+                                onSubmit={values => __handleSubmit({ values })}
                             >
-                                <Formik
-                                    key={2002}
-                                    initialValues={{
-                                        key: 2002,
-                                        id_cooperative: idcooperative,
-                                        id_member: customer,
-                                        montant: '',
-                                        currency: '',
-                                        motif: '',
-                                        periode_remboursement: '',
-                                        // date_production_d: '',
-                                        // date_production_m: '',
-                                        // date_production_y: '',
-                                    }}
-                                    validationSchema={creditSchema}
-                                    onSubmit={values => __handleSubmit({ values })}
-                                >
-                                    {({ handleChange, handleBlur, handleSubmit, values, errors }) => {
-                                        return (
-                                            <>
-                                                {/* -------------------------- */}
-                                                <View style={{ borderTopEndRadius: Dims.bigradius, borderTopStartRadius: Dims.bigradius, backgroundColor: Colors.whiteColor, height: "auto", marginTop: 0 }}>
-                                                    {customer.length > 0 && (
-                                                        <>
-                                                            <View style={{ width: "85%", alignSelf: "center", marginTop: Dims.bigradius }}>
-                                                                <View style={{ width: "100%", height: 65, flexDirection: "column" }}>
-                                                                    <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.primaryColor }}>Membre <Text style={{ color: Colors.dangerColor }}>*</Text></Text>
-                                                                    <View style={[inputGroup.container, { flexDirection: "row-reverse" }]}>
-                                                                        <View style={{ width: "20%", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
-                                                                            <Text style={{ alignSelf: "center", fontFamily: "mons-b", color: Colors.primaryColor }}>{""}</Text>
-                                                                        </View>
-                                                                        <View style={{ width: "80%", justifyContent: "center", alignContent: "center", alignItems: "center", flexDirection: "row" }}>
-                                                                            <TextInput editable={false} value={String("**********").concat(values.id_member)} placeholder='1' maxLength={50} keyboardType={"numeric"} onChangeText={(t) => handleChange('id_member')(`${t}`)} style={[inputGroup.input, { fontFamily: "mons", width: "100%" }]} />
-                                                                        </View>
-                                                                    </View>
-                                                                </View>
-                                                            </View>
-                                                            {errors.id_member && <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.dangerColor, alignSelf: "center", width: "85%", marginTop: 25 }}>{errors.id_member}</Text>}
-                                                        </>
-                                                    )}
-
-                                                    <View style={{ width: "85%", alignSelf: "center", marginTop: Dims.bigradius }}>
-                                                        <View style={{ width: "100%", height: 65, flexDirection: "column" }}>
-                                                            <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.primaryColor }}>Montant de crédit <Text style={{ color: Colors.dangerColor }}>*</Text></Text>
-                                                            <View style={[inputGroup.container, { flexDirection: "row-reverse" }]}>
-                                                                <View style={{ width: "40%", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
-                                                                    <SelectDropdown
-                                                                        // search
-                                                                        data={[{ id: "CDF" }, { id: "USD" }]}
-                                                                        onSelect={(selectedItem, index) => {
-                                                                            const { id } = selectedItem
-                                                                            handleChange('currency')(`${id}`)
-                                                                        }}
-                                                                        renderButton={(selectedItem, isOpened) => {
-                                                                            return (
-                                                                                <View style={[dropdown.dropdownButtonStyle, { width: "100%", backgroundColor: Colors.whiteColor }]}>
-                                                                                    <Text style={[dropdown.dropdownButtonTxtStyle, { fontFamily: "mons-b", color: Colors.primaryColor }]}>
-                                                                                        {(selectedItem && selectedItem.id) || 'Dévise'}
-                                                                                    </Text>
-                                                                                    <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
-                                                                                </View>
-                                                                            );
-                                                                        }}
-                                                                        renderItem={(item, index, isSelected) => {
-                                                                            return (
-                                                                                <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
-                                                                                    <Text style={[dropdown.dropdownItemTxtStyle, { fontFamily: "mons-e", fontSize: Dims.iputtextsize }]}>{item.id}</Text>
-                                                                                </View>
-                                                                            );
-                                                                        }}
-                                                                        showsVerticalScrollIndicator={false}
-                                                                        dropdownStyle={dropdown.dropdownMenuStyle}
-                                                                    />
-                                                                </View>
-                                                                <View style={{ width: "60%", justifyContent: "center", alignContent: "center", alignItems: "center", flexDirection: "row" }}>
-                                                                    <TextInput placeholder='1000' maxLength={50} keyboardType={"numeric"} onChangeText={(t) => handleChange('montant')(`${t}`)} style={[inputGroup.input, { fontFamily: "mons", width: "100%" }]} />
-                                                                </View>
+                                {({ handleChange, handleBlur, handleSubmit, values, errors }) => {
+                                    return (
+                                        <>
+                                            <View style={styles.formContainer}>
+                                                {customer.length > 0 && (
+                                                    <>
+                                                        <View style={styles.fieldRow}>
+                                                            <Text style={styles.fieldLabel}>Membre <Text style={styles.requiredStar}>*</Text></Text>
+                                                            <View style={styles.inputWrapper}>
+                                                                <TextInput
+                                                                    editable={false}
+                                                                    value={String("**********").concat(values.id_member)}
+                                                                    placeholder='1'
+                                                                    maxLength={50}
+                                                                    keyboardType={"numeric"}
+                                                                    onChangeText={(t) => handleChange('id_member')(`${t}`)}
+                                                                    style={styles.textInput}
+                                                                />
                                                             </View>
                                                         </View>
-                                                    </View>
-                                                    {(errors.montant || errors.currency) && <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.dangerColor, alignSelf: "center", width: "85%", marginTop: 25 }}>{errors.montant || errors.currency}</Text>}
+                                                        {errors.id_member && <Text style={styles.errorText}>{errors.id_member}</Text>}
+                                                    </>
+                                                )}
 
-                                                    <View style={{ width: "85%", alignSelf: "center", marginTop: Dims.bigradius }}>
-                                                        <View style={{ width: "100%", height: 65, flexDirection: "column" }}>
-                                                            <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.primaryColor }}>Motif de crédit <Text style={{ color: Colors.dangerColor }}>*</Text></Text>
-                                                            <View style={[inputGroup.container, { flexDirection: "row-reverse" }]}>
-                                                                <View style={{ width: "20%", alignContent: "center", alignItems: "center", justifyContent: "center" }}>
-                                                                    <Text style={{ alignSelf: "center", fontFamily: "mons-b", color: Colors.primaryColor }}>{""}</Text>
-                                                                </View>
-                                                                <View style={{ width: "80%", justifyContent: "center", alignContent: "center", alignItems: "center", flexDirection: "row" }}>
-                                                                    <TextInput disabled={true} multiline placeholder='Motif du crédit' maxLength={50} keyboardType={"default"} onChangeText={(t) => handleChange('motif')(`${t}`)} style={[inputGroup.input, { fontFamily: "mons", width: "100%" }]} />
-                                                                </View>
-                                                            </View>
+                                                <View style={styles.fieldRow}>
+                                                    <Text style={styles.fieldLabel}>Montant de crédit <Text style={styles.requiredStar}>*</Text></Text>
+                                                    <View style={styles.currencyAmountWrapper}>
+                                                        <View style={styles.dropdownWrapper}>
+                                                            <SelectDropdown
+                                                                data={[{ id: "CDF" }, { id: "USD" }]}
+                                                                onSelect={(selectedItem, index) => {
+                                                                    const { id } = selectedItem
+                                                                    handleChange('currency')(`${id}`)
+                                                                }}
+                                                                renderButton={(selectedItem, isOpened) => {
+                                                                    return (
+                                                                        <View style={[styles.dropdownButton, { width: "100%" }]}>
+                                                                            <Text style={[styles.dropdownButtonText, { fontFamily: "mons-b", color: Colors.primaryColor }]}>
+                                                                                {(selectedItem && selectedItem.id) || 'Devise'}
+                                                                            </Text>
+                                                                            <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
+                                                                        </View>
+                                                                    );
+                                                                }}
+                                                                renderItem={(item, index, isSelected) => {
+                                                                    return (
+                                                                        <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                                                            <Text style={[dropdown.dropdownItemTxtStyle, { fontFamily: "mons-e", fontSize: Dims.iputtextsize }]}>{item.id}</Text>
+                                                                        </View>
+                                                                    );
+                                                                }}
+                                                                showsVerticalScrollIndicator={false}
+                                                                dropdownStyle={dropdown.dropdownMenuStyle}
+                                                            />
+                                                        </View>
+                                                        <View style={styles.amountInputWrapper}>
+                                                            <TextInput
+                                                                placeholder='1000'
+                                                                maxLength={50}
+                                                                keyboardType={"numeric"}
+                                                                onChangeText={(t) => handleChange('montant')(`${t}`)}
+                                                                style={styles.textInput}
+                                                            />
                                                         </View>
                                                     </View>
-                                                    {errors.motif && <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.dangerColor, alignSelf: "center", width: "85%", marginTop: 25 }}>{errors.motif}</Text>}
+                                                </View>
+                                                {(errors.montant || errors.currency) && <Text style={styles.errorText}>{errors.montant || errors.currency}</Text>}
+
+                                                <View style={styles.fieldRow}>
+                                                    <Text style={styles.fieldLabel}>Motif de crédit <Text style={styles.requiredStar}>*</Text></Text>
+                                                    <View style={styles.inputWrapper}>
+                                                        <TextInput
+                                                            multiline
+                                                            numberOfLines={3}
+                                                            placeholder='Motif du crédit'
+                                                            maxLength={200}
+                                                            keyboardType={"default"}
+                                                            onChangeText={(t) => handleChange('motif')(`${t}`)}
+                                                            style={[styles.textInput, styles.multilineInput]}
+                                                        />
+                                                    </View>
+                                                </View>
+                                                {errors.motif && <Text style={styles.errorText}>{errors.motif}</Text>}
+
+                                                {/* Native DatePicker (mobile) */}
+                                                {Platform.OS !== 'web' && (
                                                     <DatePicker
                                                         key={randomString({ length: 12 })}
                                                         title={null}
@@ -292,50 +329,68 @@ export const CreditsScreen = ({ route, navigation }) => {
                                                             setOpen(false)
                                                         }}
                                                     />
-                                                    {/* ====================================================================== */}
-                                                    <View style={{ width: "85%", alignSelf: "center", marginTop: Dims.bigradius, marginBottom: 20 }}>
-                                                        <View style={{ width: "100%", height: 65, flexDirection: "column" }}>
-                                                            <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.primaryColor }}>Période de remoboursement <Text style={{ color: Colors.dangerColor }}>*</Text></Text>
-                                                            <TouchableHighlight underlayColor={Colors.whiteColor} style={[inputGroup.container, { flexDirection: "row-reverse", width: "100%" }]} onPress={() => { setOpen(!open) }} >
-                                                                <View style={{ width: "100%", justifyContent: "flex-start", paddingLeft: 20, alignContent: "flex-start", alignItems: "center", flexDirection: "row" }}>
-                                                                    <Text style={{ fontFamily: "mons", color: Colors.primaryColor }}>{values.periode_remboursement ? String(values.periode_remboursement).concat(" Mois") : "Sélectionner une période"}</Text>
-                                                                </View>
-                                                            </TouchableHighlight>
+                                                )}
+
+                                                {/* Web DatePicker fallback */}
+                                                <WebDatePicker
+                                                    open={open}
+                                                    date={date}
+                                                    onConfirm={(date) => {
+                                                        setOpen(false)
+                                                        setDate(date)
+                                                        const __ = differenceInMonths({ date1: new Date(), date2: date })
+                                                        handleChange('periode_remboursement')(`${__}`)
+                                                    }}
+                                                    onCancel={() => {
+                                                        setOpen(false)
+                                                    }}
+                                                />
+
+                                                <View style={styles.fieldRow}>
+                                                    <Text style={styles.fieldLabel}>Période de remboursement <Text style={styles.requiredStar}>*</Text></Text>
+                                                    <TouchableHighlight
+                                                        underlayColor={Colors.whiteColor}
+                                                        style={styles.pickerButton}
+                                                        onPress={() => { setOpen(!open) }}
+                                                    >
+                                                        <View style={styles.pickerButtonContent}>
+                                                            <Text style={styles.pickerButtonText}>
+                                                                {values.periode_remboursement ? String(values.periode_remboursement).concat(" Mois") : "Sélectionner une période"}
+                                                            </Text>
                                                         </View>
-                                                    </View>
-                                                    {errors.periode_remboursement && <Text style={{ fontFamily: "mons-b", paddingLeft: 10, color: Colors.dangerColor, alignSelf: "center", width: "85%", marginTop: 5 }}>{errors.periode_remboursement}</Text>}
+                                                    </TouchableHighlight>
                                                 </View>
-                                                <View style={{ width: "85%", height: 65, flexDirection: "column", marginVertical: 25, alignItems: "center", alignSelf: "center", marginTop: 50 }}>
-                                                    <View style={{ flexDirection: "row" }}>
-                                                        <TouchableHighlight
-                                                            onPress={handleSubmit}
-                                                            disabled={isloading}
-                                                            underlayColor={Colors.primaryColor}
-                                                            style={[btn, { width: "100%" }]}
-                                                        >
-                                                            <Text style={{ color: Colors.whiteColor, fontFamily: "mons" }}>Confirmer</Text>
-                                                        </TouchableHighlight>
-                                                    </View>
-                                                    <Text style={{ fontFamily: "mons", fontSize: Dims.subtitletextsize, marginVertical: 10, color: Colors.dangerColor, textAlign: "center" }}>
-                                                        {output}
-                                                    </Text>
-                                                </View>
-                                            </>
-                                        )
-                                    }}
-                                </Formik>
-                            </ScrollView>
-                        </View>
+                                                {errors.periode_remboursement && <Text style={styles.errorText}>{errors.periode_remboursement}</Text>}
+                                            </View>
+                                            <View style={styles.submitContainer}>
+                                                <TouchableHighlight
+                                                    onPress={handleSubmit}
+                                                    disabled={isloading}
+                                                    underlayColor={Colors.primaryColor}
+                                                    style={styles.submitButton}
+                                                >
+                                                    {isloading ? (
+                                                        <Text style={{ color: Colors.whiteColor, fontFamily: "mons" }}>Enregistrement...</Text>
+                                                    ) : (
+                                                        <Text style={{ color: Colors.whiteColor, fontFamily: "mons" }}>Confirmer</Text>
+                                                    )}
+                                                </TouchableHighlight>
+                                                <Text style={styles.outputText}>{output}</Text>
+                                            </View>
+                                        </>
+                                    )
+                                }}
+                            </Formik>
+                        </ScrollView>
                     )}
 
                     {step === 1 && (
-                        <View style={{ width: "100%", height: Dims.height }}>
+                        <View style={styles.scannerContainer}>
                             <BarcodereaderComponenent
                                 navigation={navigation}
                                 key={randomLongNumber({ length: 6 })}
                                 rescann={rescann}
                                 cb={(d) => {
-
                                     setrescann(false)
                                     const { data, target, type } = d;
                                     const str = decodeBase64({ string: data });
@@ -344,7 +399,6 @@ export const CreditsScreen = ({ route, navigation }) => {
                                         if (expiresin && id_customer && id_coopec) {
                                             if (belongsToThisCooperative({ id_cooperative: id_coopec })) {
                                                 if (!checkIfExpired({ unix: expiresin })) {
-                                                    // setcustomer(id_customer)
                                                     onRunExternalRQST({
                                                         method: "GET",
                                                         url: `/users/user/${id_customer}`,
@@ -519,3 +573,177 @@ export const CreditsScreen = ({ route, navigation }) => {
         </>
     )
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: Colors.whiteColor,
+  },
+  segmentContainer: {
+    width: '100%',
+    paddingTop: 15,
+    paddingHorizontal: 10,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+    backgroundColor: Colors.whiteColor,
+    width: '100%',
+  },
+  customerCard: {
+    width: '90%',
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  customerText: {
+    fontFamily: "mons",
+    color: Colors.whiteColor,
+    marginVertical: 4,
+    fontSize: Dims.textsize,
+  },
+  customerLabel: {
+    fontFamily: "mons-e",
+  },
+  formContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 20,
+    paddingBottom: 20,
+  },
+  fieldRow: {
+    width: '100%',
+    marginTop: Dims.bigradius,
+  },
+  fieldLabel: {
+    fontFamily: "mons-b",
+    color: Colors.primaryColor,
+    marginBottom: 8,
+    fontSize: Dims.textsize,
+  },
+  requiredStar: {
+    color: Colors.dangerColor,
+  },
+  inputWrapper: {
+    width: '100%',
+  },
+  textInput: {
+    fontFamily: "mons",
+    width: '100%',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: Colors.whiteColor,
+    borderWidth: 1,
+    borderColor: Colors.borderColor,
+    borderRadius: 8,
+    fontSize: Dims.iputtextsize,
+  },
+  multilineInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 12,
+  },
+  currencyAmountWrapper: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 10,
+  },
+  dropdownWrapper: {
+    width: '35%',
+    maxWidth: 120,
+  },
+  amountInputWrapper: {
+    flex: 1,
+    width: '65%',
+  },
+  dropdownButton: {
+    width: '100%',
+    backgroundColor: Colors.whiteColor,
+    borderWidth: 1,
+    borderColor: Colors.borderColor,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  dropdownButtonText: {
+    fontFamily: "mons-b",
+    color: Colors.primaryColor,
+  },
+  errorText: {
+    fontFamily: "mons-b",
+    color: Colors.dangerColor,
+    marginTop: 8,
+    fontSize: Dims.subtitletextsize - 2,
+    width: '100%',
+    textAlign: 'left',
+  },
+  webDatePickerContainer: {
+    width: '100%',
+    marginTop: Dims.bigradius,
+  },
+  webDateInput: {
+    width: '100%',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: Colors.whiteColor,
+    borderWidth: 1,
+    borderColor: Colors.borderColor,
+    borderRadius: 8,
+    fontSize: Dims.iputtextsize,
+    fontFamily: "mons",
+    color: Colors.textColor,
+  },
+  pickerButton: {
+    width: '100%',
+    backgroundColor: Colors.whiteColor,
+    borderWidth: 1,
+    borderColor: Colors.borderColor,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pickerButtonContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  pickerButtonText: {
+    fontFamily: "mons",
+    color: Colors.primaryColor,
+    fontSize: Dims.iputtextsize,
+  },
+  submitContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 30,
+    marginBottom: 30,
+  },
+  submitButton: {
+    width: '100%',
+    minHeight: 55,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryColor,
+    borderRadius: 8,
+  },
+  outputText: {
+    fontFamily: "mons",
+    fontSize: Dims.subtitletextsize,
+    marginVertical: 10,
+    color: Colors.dangerColor,
+    textAlign: "center",
+  },
+  scannerContainer: {
+    flex: 1,
+    width: '100%',
+  },
+});
+
+export default CreditsScreen;
