@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Title } from '../../components/Title/Title';
-import { TouchableHighlight, View, TextInput, Text, ScrollView } from 'react-native';
+import { TouchableHighlight, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
 import { Colors } from '../../assets/colors/Colors';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import Snackbar from 'react-native-snackbar';
@@ -66,7 +66,7 @@ export const ApprovisionnemtScreen = ({ route, navigation }) => {
     return (
         <>
             <Title title={"Approvisionnement"} subtitle={"Approvisionnement stock coopérative"} navigation={navigation} />
-            <View style={{ width: "100%", height: Dims.height, display: "flex", justifyContent: "center", alignContent: "center", alignItems: "center", alignSelf: "center" }}>
+            <View style={styles.container}>
                 <BarcodereaderComponenent
                     navigation={navigation}
                     key={67657}
@@ -190,3 +190,10 @@ export const ApprovisionnemtScreen = ({ route, navigation }) => {
         </>
     )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+  },
+});
