@@ -38,4 +38,36 @@ config.resolver.alias = {
   'react-native/Libraries/StyleSheet/PlatformColorValueTypes': path.resolve(__dirname, 'services/PlatformColorValueTypes.web.js'),
   };
 
+// Ensure extraNodeModules also has the mocks for web platform
+config.resolver.extraNodeModules = {
+  ...config.resolver.extraNodeModules,
+  'react-native-snackbar': path.resolve(__dirname, 'src/mocks/react-native-snackbar.web.js'),
+  'react-native-nfc-manager': path.resolve(__dirname, 'services/nfc.web.js'),
+  'rn-fetch-blob': path.resolve(__dirname, 'services/rnfetchblob.web.js'),
+  'react-native-ble-manager': path.resolve(__dirname, 'services/ble.web.js'),
+};
+
+// Add a custom resolver to ensure native modules resolve to mocks on web
+const originalResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (platform === 'web') {
+    const mockMap = {
+      'react-native-snackbar': 'src/mocks/react-native-snackbar.web.js',
+      'react-native-nfc-manager': 'services/nfc.web.js',
+      'rn-fetch-blob': 'services/rnfetchblob.web.js',
+      'react-native-ble-manager': 'services/ble.web.js',
+    };
+    if (mockMap[moduleName]) {
+      return {
+        filePath: path.resolve(__dirname, mockMap[moduleName]),
+        type: 'sourceFile',
+      };
+    }
+  }
+  if (originalResolveRequest) {
+    return originalResolveRequest(context, moduleName, platform);
+  }
+  return context.resolveRequest(context, moduleName, platform);
+};
+
 module.exports = config;

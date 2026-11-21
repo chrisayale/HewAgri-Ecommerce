@@ -42,34 +42,6 @@ import { ListeCreditsByUserScreen } from './screens/Credits/ListeCreditByUserScr
 import { ApprovionnementScreen } from './screens/Approvisionnement/Approvisionnnement';
 import { StoreStateScreen } from './screens/Stock/Storestate';
 
-// Enregistrement du Service Worker pour PWA
-if (Platform.OS === 'web') {
-  React.useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('[PWA] Service Worker enregistré:', registration.scope);
-
-          // Vérifier les mises à jour
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Nouvelle version disponible
-                if (confirm('Une nouvelle version est disponible. Recharger ?')) {
-                  window.location.reload();
-                }
-              }
-            });
-          });
-        })
-        .catch(error => {
-          console.error('[PWA] Erreur Service Worker:', error);
-        });
-    }
-  }, []);
-}
-
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -121,4 +93,4 @@ export default function App() {
       <Toast config={{ position: 'top', visibilityTime: 3000 }} />
     </Provider>
   );
-};
+}

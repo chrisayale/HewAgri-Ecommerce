@@ -12,6 +12,7 @@ import {
 
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import RNPrint from 'react-native-print';
+import { createStylesSafe } from '../../assets/styles/Styles';
 
 export default class RNPrintExample extends Component {
   state = {
@@ -85,11 +86,13 @@ export default class RNPrintExample extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+const _rawStyles = {
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
-});
+};
+
+const styles = createStylesSafe(_rawStyles, 'PrintTempScreen');

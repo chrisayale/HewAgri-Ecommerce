@@ -10,6 +10,11 @@ const placeHolderColor = "#9C9696";
 const neutreColor = "#fff";
 const pInRGBA = "rgba(4,131,67,.2)";
 const dInRGBA = "rgba(255,31,0,.2)";
+// Couleurs manquantes utilisées dans ScannerComponent.web.jsx et autres composants
+const textColor = "#151E26";
+const greyColor = "#9C9696";
+const borderColor = "#E0E0E0";
+const inactiveColor = "#9E9E9E";
 
 export const Colors = {
     pInRGBA,
@@ -23,5 +28,9 @@ export const Colors = {
     successColor,
     dangerColor,
     whiteColor,
-    darkColor
+    darkColor,
+    textColor,
+    greyColor,
+    borderColor,
+    inactiveColor
 }

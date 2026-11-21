@@ -6,6 +6,7 @@ import DialogBox from 'react-native-dialogbox';
 import { Colors } from '../../assets/colors/Colors';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import BarcodeMask from 'react-native-barcode-mask';
+import { createStylesSafe } from '../../assets/styles/Styles';
 
 export const BarcodereaderScreen = ({ navigation }) => {
   const dialogbox = React.useRef(null);
@@ -92,7 +93,7 @@ export const BarcodereaderScreen = ({ navigation }) => {
   );
 }
 
-const styles = StyleSheet.create({
+const _rawStyles = {
   container: {
     flex: 1,
   },
@@ -114,4 +115,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.whiteColor,
   },
-});
+};
+
+const styles = createStylesSafe(_rawStyles, 'BarcodeReaderScreen');

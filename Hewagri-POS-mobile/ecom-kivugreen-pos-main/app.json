@@ -12,7 +12,8 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-project-id"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -35,7 +36,14 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "NFC",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -92,7 +100,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Balabala démande accès à la camera pour scanner le QRCode au processus de paiement de transport"
+          "cameraPermission": "Hewagri demande accès à la camera pour scanner le QRCode au processus de paiement de transport"
         }
       ],
       [
@@ -103,7 +111,17 @@
           "mode": "production"
         }
       ],
-      "react-native-nfc-manager"
-    ]
+      "react-native-nfc-manager",
+      "expo-secure-store",
+      "expo-file-system"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
   }
 }

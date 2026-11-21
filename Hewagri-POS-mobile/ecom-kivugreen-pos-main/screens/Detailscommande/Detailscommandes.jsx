@@ -6,8 +6,7 @@ import { Colors } from '../../assets/colors/Colors';
 import { encodeBase64, formatDate, renderState, trucString } from '../../assets/helper/helper.all';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import { TouchableHighlight } from 'react-native';
-import { btn, cel } from '../../assets/styles/Styles';
-import { StyleSheet } from 'react-native';
+import { btn, cel, createStylesSafe } from '../../assets/styles/Styles';
 import Snackbar from 'react-native-snackbar';
 import BleManager from 'react-native-ble-manager';
 import PosPrinter from 'react-native-pos-printer';
@@ -18,6 +17,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import Modal from "react-native-modal";
 import QRCode from 'react-native-qrcode-svg';
 import { io } from 'socket.io-client';
+
 import {
     CodeField,
     Cursor,
@@ -687,7 +687,7 @@ export const DetailscommandeScreen = ({ navigation, route }) => {
     )
 }
 
-const styles = StyleSheet.create({
+const _rawStyles = {
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -706,4 +706,6 @@ const styles = StyleSheet.create({
         alignSelf: "flex-start",
         marginBottom: 5,
     },
-});
+};
+
+const styles = createStylesSafe(_rawStyles, 'DetailscommandeScreen');

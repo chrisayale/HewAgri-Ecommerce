@@ -4,6 +4,7 @@ import { Colors } from '../../assets/colors/Colors';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { appname } from '../../assets/configs/configs';
+import { createStylesSafe } from '../../assets/styles/Styles';
 
 let BarCodeScanner;
 let Camera;
@@ -239,7 +240,7 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const _rawStyles = {
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -303,9 +304,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#0f0',
     fontWeight: 'bold',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+    textShadow: '1px 1px 3px #000',
   },
   nativeContainer: {
     flex: 1,
@@ -340,11 +339,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutreColor,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
   },
   manualTrigger: {
     backgroundColor: Colors.secondaryColor,
@@ -417,6 +412,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+};
+
+const styles = createStylesSafe(_rawStyles, 'ScannerComponent.web');
 
 export default BarcodereaderComponenent;

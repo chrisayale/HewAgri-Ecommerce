@@ -20,7 +20,6 @@ module.exports = async function (env, argv) {
     'rn-fetch-blob': path.resolve(__dirname, 'services/rnfetchblob.web.js'),
     'react-native-print': path.resolve(__dirname, 'services/printer.web.js'),
     'react-native-html-to-pdf': path.resolve(__dirname, 'services/htmltopdf.web.js'),
-    'react-native-snackbar': path.resolve(__dirname, 'services/snackbar.web.js'),
     // Fix pour nanoid/non-secure ESM
     'nanoid/non-secure': path.resolve(__dirname, 'services/nanoid-web.js'),
     // Fix pour PlatformColorValueTypes

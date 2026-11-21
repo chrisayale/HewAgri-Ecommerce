@@ -1,4 +1,8 @@
-import { Dimensions } from "react-native";
+import { Dimensions, Platform } from "react-native";
+
+const { width: screenWidth, height: screenHeight } = Platform.OS === 'web'
+  ? { width: typeof window !== 'undefined' ? window.innerWidth : 375, height: typeof window !== 'undefined' ? window.innerHeight : 667 }
+  : Dimensions.get("screen");
 
 export const Dims = {
     iconsize: 18,
@@ -11,6 +15,6 @@ export const Dims = {
     bigradius: 35,
     smallradius: 20,
     inputHeight: 48,
-    width: Dimensions.get("screen").width,
-    height: Dimensions.get("screen").height
+    width: screenWidth,
+    height: screenHeight
 }

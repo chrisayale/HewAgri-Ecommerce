@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import PosPrinter from 'react-native-pos-printer';
 import RNFetchBlob from 'rn-fetch-blob';
+import { createStylesSafe } from '../../assets/styles/Styles';
 // const Command = PosPrinter.
 
 
@@ -153,11 +154,13 @@ export const RNPrintExample = ({ route, navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const _rawStyles = {
     container: {
         flex: 1,
     },
     box: {
         margin: 10,
     },
-});
+};
+
+const styles = createStylesSafe(_rawStyles, 'PrintScreen');
