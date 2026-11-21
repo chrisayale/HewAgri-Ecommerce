@@ -36,7 +36,7 @@
       prenom: "Jean",
       phone: "+243970000001",
       email: "admin@kivugreen.cd",
-      token: "test-token-coop-admin-1",
+      token: "", // Empty - user must log in to get real JWT token
       uuid: "uuid-coop-admin-1",
       roles: [{ id: 1, name: "COOP_ADMIN" }, { id: 2, name: "MANAGER" }],
       idcooperative: 1,
@@ -54,7 +54,7 @@
       prenom: "Pierre",
       phone: "+243970000002",
       email: "livreur@kivugreen.cd",
-      token: "test-token-livreur-1",
+      token: "", // Empty - user must log in to get real JWT token
       uuid: "uuid-livreur-1",
       roles: [{ id: 3, name: "LIVREUR" }],
       idcooperative: 1,
@@ -72,7 +72,7 @@
       prenom: "Marie",
       phone: "+243970000003",
       email: "admin2@kivugreen.cd",
-      token: "test-token-coop-admin-2",
+      token: "", // Empty - user must log in to get real JWT token
       uuid: "uuid-coop-admin-2",
       roles: [{ id: 1, name: "COOP_ADMIN" }],
       idcooperative: 2,
@@ -107,13 +107,13 @@
       await clearTestData();
 
       for (const user of SEED_USERS) {
-        const userKey = `__tbl_ecom_users__${user.token}`;
+        const userKey = `__tbl_ecom_users__${user.uuid}`; // Use uuid as key since token is empty
         await localforage.setItem(userKey, user);
 
         const idsKey = '__tbl_ecom_users___ids';
         const ids = (await localforage.getItem(idsKey)) || [];
-        if (!ids.includes(user.token)) {
-          ids.push(user.token);
+        if (!ids.includes(user.uuid)) {
+          ids.push(user.uuid);
           await localforage.setItem(idsKey, ids);
         }
 
@@ -122,10 +122,13 @@
       }
 
       console.log('\n🎉 Seed terminé avec succès !');
-      console.log('\n📋 Identifiants de test :');
+      console.log('\n📋 Identifiants de test (IndexedDB local) :');
       console.log('  👨‍💼 Admin Coopérative 1: +243970000001 / password123');
       console.log('  🚚 Livreur:             +243970000002 / password123');
       console.log('  👩‍💼 Admin Coopérative 2: +243970000003 / password123');
+      console.log('\n✅ Ces utilisateurs existent AUSSI dans le backend MySQL');
+      console.log('   - Admin Coop 1 & 2: Rôles 1,3 → /auth ✅ → typeaccount 2 (tabs)');
+      console.log('   - Livreur: Rôle 5 → /authbank ❌ pour /auth (utiliser endpoint livreur)');
       console.log('\n💡 Utilisez ces numéros dans l\'écran de connexion POS');
 
       return true;

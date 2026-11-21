@@ -12,7 +12,7 @@ const SEED_USERS = [
     phone: "+243970000001",
     email: "admin@kivugreen.cd",
     password: "password123", // Will be hashed by backend
-    token: "test-token-coop-admin-1",
+    token: "", // Empty - user must log in to get real JWT token
     uuid: "uuid-coop-admin-1",
     roles: [{ id: 1, name: "COOP_ADMIN" }, { id: 2, name: "MANAGER" }],
     idcooperative: 1,
@@ -32,7 +32,7 @@ const SEED_USERS = [
     phone: "+243970000002",
     email: "livreur@kivugreen.cd",
     password: "password123",
-    token: "test-token-livreur-1",
+    token: "", // Empty - user must log in to get real JWT token
     uuid: "uuid-livreur-1",
     roles: [{ id: 3, name: "LIVREUR" }],
     idcooperative: 1,
@@ -52,7 +52,7 @@ const SEED_USERS = [
     phone: "+243970000003",
     email: "admin2@kivugreen.cd",
     password: "password123",
-    token: "test-token-coop-admin-2",
+    token: "", // Empty - user must log in to get real JWT token
     uuid: "uuid-coop-admin-2",
     roles: [{ id: 1, name: "COOP_ADMIN" }],
     idcooperative: 2,
@@ -104,14 +104,14 @@ async function seedIndexedDB() {
 
     // Seed users
     for (const user of SEED_USERS) {
-      const userKey = `__tbl_ecom_users__${user.token}`; // Using token as unique ID
+      const userKey = `__tbl_ecom_users__${user.uuid}`; // Using uuid as unique ID since token is empty
       await localforage.setItem(userKey, user);
 
       // Update _ids array
       const idsKey = '__tbl_ecom_users___ids';
       const ids = (await localforage.getItem(idsKey)) || [];
-      if (!ids.includes(user.token)) {
-        ids.push(user.token);
+      if (!ids.includes(user.uuid)) {
+        ids.push(user.uuid);
         await localforage.setItem(idsKey, ids);
       }
 

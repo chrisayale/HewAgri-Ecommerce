@@ -117,6 +117,12 @@ export const LoadingSceen = ({ navigation }) => {
             switch (parseInt(typeaccount)) {
               case 2: // Cooperative user - validate with backend
                 console.log('[LoadingScreen] Type 2 user, validating cooperative with backend...');
+                // Check if token exists and looks valid (not a test token)
+                if (!token || token.startsWith('test-token-')) {
+                  console.log('[LoadingScreen] No valid token found, redirecting to auth');
+                  navigateToAuth();
+                  return;
+                }
                 onRunExternalRQST({
                   method: "GET",
                   url: `/cooperatives/cooperative/${idcooperative}`
@@ -129,6 +135,10 @@ export const LoadingSceen = ({ navigation }) => {
                     global.coopec = res.data;
                     console.log('[LoadingScreen] Cooperative validated, navigating to tabs');
                     navigateToTabs(user);
+                  } else if (res && res.status === 401) {
+                    // Token expired or invalid - redirect to login
+                    console.log('[LoadingScreen] Token invalid/expired, redirecting to auth');
+                    navigateToAuth();
                   } else {
                     console.log('[LoadingScreen] Cooperative validation failed, status:', res?.status);
                     navigateToAuth();
