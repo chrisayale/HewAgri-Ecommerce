@@ -26,12 +26,31 @@ export const timeout = 25000;
 
 export const onRunInsertQRY = async ({ columns, dot, table, values, options }, cb) => {
     try {
+        console.log('[communications] onRunInsertQRY: inserting into', table);
+        // Extract the realid (first value) to fetch the specific record after insert
+        const realid = values && values[0] ? values[0] : null;
         db.transaction(
             (tx) => {
-                tx.executeSql(`insert into ${table} (${columns}) values (${dot})`, values);
-                tx.executeSql(`select * from ${table}`, [], (_, { rows }) => {
-                    const result = rows['_array'][0];
+                tx.executeSql(`insert into ${table} (${columns}) values (${dot})`, values,
+                    (_, result) => {
+                        console.log('[communications] Insert result:', result);
+                    },
+                    (err) => {
+                        console.error('[communications] Insert error:', err);
+                    }
+                );
+                // Select the specific record by realid if available, otherwise get the latest
+                const selectSql = realid
+                    ? `select * from ${table} where realid = '${realid}'`
+                    : `select * from ${table} order by crearedon desc limit 1`;
+                tx.executeSql(selectSql, [], (_, { rows }) => {
+                    console.log('[communications] Select after insert, rows:', rows);
+                    const result = rows && rows['_array'] && rows['_array'][0] ? rows['_array'][0] : null;
+                    console.log('[communications] Inserted record:', result);
                     cb(undefined, result);
+                }, (err) => {
+                    console.error('[communications] Select after insert error:', err);
+                    cb(err, undefined);
                 });
             },
             (err) => {

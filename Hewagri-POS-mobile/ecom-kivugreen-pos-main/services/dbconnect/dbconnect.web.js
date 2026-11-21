@@ -98,17 +98,24 @@ class WebDatabase {
 
       let record = {};
       if (columnsMatch && valuesMatch) {
-        const columns = columnsMatch[1].split(',').map(c => c.trim());
-        const values = valuesMatch[1].split(',').map(v => v.trim().replace(/['"]/g, ''));
+        const columns = columnsMatch[1].split(',').map(c => c.trim().replace(/^['"`]+|['"`]+$/g, ''));
+        const values = valuesMatch[1].split(',').map(v => v.trim().replace(/^['"`]+|['"`]+$/g, ''));
         columns.forEach((col, i) => {
           record[col] = params[i] !== undefined ? params[i] : values[i];
         });
       } else if (params.length > 0) {
-        record = params[0];
+        // If params is an array of values, try to map to expected columns
+        // For now, assume first param might be the record object or use timestamp
+        if (typeof params[0] === 'object' && params[0] !== null) {
+          record = params[0];
+        } else {
+          record = { id: Date.now().toString() };
+        }
       }
 
+      // Ensure we have an id - use realid if available, otherwise generate
       if (!record.id) {
-        record.id = Date.now().toString();
+        record.id = record.realid || Date.now().toString();
       }
 
       await localforage.setItem(table + '_' + record.id, record);
