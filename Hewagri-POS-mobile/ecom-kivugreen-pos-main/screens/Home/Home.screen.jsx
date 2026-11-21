@@ -165,7 +165,7 @@ export const HomeScreen = ({ navigation }) => {
                 >
                     <View style={{ marginTop: 10, width: "100%" }}>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 15 }}>
                             <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
@@ -199,7 +199,7 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 15 }}>
                             <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
@@ -233,7 +233,7 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 15 }}>
                             <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
@@ -267,7 +267,7 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 15 }}>
                             <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
@@ -301,7 +301,7 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 15 }}>
                             <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
