@@ -8,24 +8,19 @@ OnInitialize(); // initialize tables and create them if not exist
 
 axios.interceptors.request.use(
     config => {
-        config['headers']['x-ecommerce-mobkgreen-api'] = `Bearer ${global['token']}`
-        // config.headers.accesskey = "$2b$10$AS6GbX37SkQS6skhMOYjveDOuUUgvGz9dvsrCbeylWl/SwMkDDp2G";
-        // config.headers.apikeyaccess = "p@yondego.zaq2022";
+        config.headers['x-ecommerce-mobkgreen-api'] = `Bearer ${global.token}`;
         return config;
     },
-    rejected => {
-        return new Promise.reject(rejected)
-    }
+    error => Promise.reject(error)
 );
 
 axios.interceptors.response.use(
-    (resposne) => {
-        return resposne;
-    }
-    , error => {
+    response => response,
+    error => {
         const er = error.response ? error.response : undefined;
-        return er ? er : new Promise.reject(error)
-    });
+        return er ? er : Promise.reject(error);
+    }
+);
 
 export const timeout = 25000;
 
