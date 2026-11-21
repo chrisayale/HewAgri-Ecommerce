@@ -35,10 +35,10 @@ export const Produits = connect.define<Produit>('__tbl_ecom_produits', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Produits.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Produits` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Produits.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Produits` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

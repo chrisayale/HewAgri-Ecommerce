@@ -103,10 +103,15 @@ class WebDatabase {
       const columnsMatch = sql.match(/\(([^)]+)\)/);
       const valuesMatch = sql.match(/values\s*\(([^)]+)\)/i);
 
+      console.log('[WebDB] INSERT SQL:', sql);
+      console.log('[WebDB] INSERT params:', params);
+
       let record = {};
       if (columnsMatch && valuesMatch) {
         const columns = columnsMatch[1].split(',').map(c => c.trim().replace(/^['"`]+|['"`]+$/g, ''));
         const values = valuesMatch[1].split(',').map(v => v.trim().replace(/^['"`]+|['"`]+$/g, ''));
+        console.log('[WebDB] Parsed columns:', columns);
+        console.log('[WebDB] Parsed values:', values);
         columns.forEach((col, i) => {
           record[col] = params[i] !== undefined ? params[i] : values[i];
         });
@@ -119,6 +124,8 @@ class WebDatabase {
           record = { id: Date.now().toString() };
         }
       }
+
+      console.log('[WebDB] Built record:', record);
 
       // Ensure we have an id - use realid if available, otherwise generate
       if (!record.id) {

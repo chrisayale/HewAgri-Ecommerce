@@ -17,10 +17,10 @@ export const Unites = connect.define<Unity>('__tbl_ecom_unitesmesures', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Unites.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Unites` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Unites.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Unites` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

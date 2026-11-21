@@ -52,10 +52,10 @@ export const Cooperatives = connect.define<Coopec>('__tbl_ecom_cooperatives', {
     ]
 });
 
-Cooperatives.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Cooperatives` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Cooperatives.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Cooperatives` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

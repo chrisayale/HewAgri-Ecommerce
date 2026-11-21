@@ -46,10 +46,10 @@ export const Carousels = connect.define<Carousel>('__tbl_ecom_carousels', {
 
 }, { paranoid: true, timestamps: true });
 
-Carousels.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Created done `table Carousels` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Carousels.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Created done `table Carousels` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

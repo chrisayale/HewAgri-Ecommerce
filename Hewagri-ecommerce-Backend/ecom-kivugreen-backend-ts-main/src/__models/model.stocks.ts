@@ -48,10 +48,10 @@ export const Stocks = connect.define<Stock>('__tbl_ecom_stocks', {
 
 }, { paranoid: true, timestamps: true });
 
-Stocks.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Stocks` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Stocks.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Stocks` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

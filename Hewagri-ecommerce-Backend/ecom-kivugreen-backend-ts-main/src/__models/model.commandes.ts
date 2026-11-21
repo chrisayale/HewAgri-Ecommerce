@@ -59,10 +59,10 @@ export const Commandes = connect.define<Commande>('__tbl_ecom_commandes', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Commandes.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Commandes` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Commandes.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Commandes` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

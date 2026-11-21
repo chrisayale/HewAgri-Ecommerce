@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, Platform } from 'react-native';
 import { Camera, } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DialogBox from 'react-native-dialogbox';
-import { Colors } from '../../assets/colors/Colors';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import BarcodeMask from 'react-native-barcode-mask';
 import { appname } from '../../assets/configs/configs';
+import {
+  card,
+  cardElevated,
+  flexRow,
+  flexRowBetween,
+  flexRowCenter,
+  flexColCenter,
+  text,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  Colors,
+  IconSizes,
+} from '../../assets/styles/Styles';
 
 export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
 
@@ -40,12 +53,32 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
   }
 
   if (hasPermission === null) {
-    return <View />;
+    return <View style={styles.loadingContainer} />;
   }
   if (hasPermission === false) {
     return (
-      <View style={styles.container}>
-        <Text style={{ fontFamily: "mons-b", textAlign: "center", padding: 20 }}>{appname} n'a pas d'accès à votre caméra; accorder d'abord l'accès à {appname} avant de continuer !</Text>
+      <View style={styles.permissionContainer}>
+        <View style={styles.permissionCard}>
+          <Ionicons name="camera-outline" size={48} color={Colors.text.tertiary} style={{ marginBottom: Spacing.md }} />
+          <Text style={{ fontFamily: "mons-b", textAlign: "center", padding: Spacing.md, color: Colors.text.primary, fontSize: 16 }}>
+            {appname} n'a pas d'accès à votre caméra; accorder d'abord l'accès à {appname} avant de continuer !
+          </Text>
+          <TouchableHighlight
+            underlayColor={Colors.neutral[200]}
+            onPress={() => navigation.goBack()}
+            style={{
+              marginTop: Spacing.lg,
+              paddingHorizontal: Spacing.xl,
+              paddingVertical: Spacing.md,
+              backgroundColor: Colors.primary[500],
+              borderRadius: BorderRadius.md,
+              ...Shadows.shadow.sm,
+            }}
+            activeOpacity={0.9}
+          >
+            <Text style={{ color: Colors.whiteColor, fontFamily: "mons-b", fontSize: 16 }}>Retour</Text>
+          </TouchableHighlight>
+        </View>
       </View>
     );
   }
@@ -61,28 +94,36 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
         <BarcodeMask
           outerMaskOpacity={0.8}
           lineAnimationDuration={800}
-          animatedLineColor={Colors.primaryColor}
-          animatedLineHeight={5}
-          edgeColor={Colors.primaryColor}
+          animatedLineColor={Colors.primary[500]}
+          animatedLineHeight={4}
+          edgeColor={Colors.primary[500]}
         />
         <View style={styles.buttonContainer}>
           <TouchableHighlight
             style={styles.button}
-            onPress={toggletype}>
-            <Ionicons name='sync' size={Dims.iconsize} color={Colors.primaryColor} />
+            onPress={toggletype}
+            activeOpacity={0.8}
+            underlayColor="rgba(255,255,255,0.2)"
+          >
+            <Ionicons name='sync' size={IconSizes.header} color={Colors.whiteColor} />
           </TouchableHighlight>
           <TouchableHighlight
             onPress={togglelight}
-            style={styles.button}>
+            style={styles.button}
+            activeOpacity={0.8}
+            underlayColor="rgba(255,255,255,0.2)"
+          >
             <Ionicons name={
               lightmd === Camera.Constants.FlashMode.off ? "flash-outline" : "flash-off-outline"
-            } size={Dims.iconsize} color={Colors.primaryColor} />
+            } size={IconSizes.header} color={Colors.whiteColor} />
           </TouchableHighlight>
           <TouchableHighlight
             onPress={() => navigation.goBack()}
             style={styles.button}
+            activeOpacity={0.8}
+            underlayColor="rgba(255,255,255,0.2)"
           >
-            <Ionicons name='arrow-back-outline' color={Colors.primaryColor} size={Dims.iconsize} />
+            <Ionicons name='arrow-back-outline' color={Colors.whiteColor} size={IconSizes.header} />
           </TouchableHighlight>
         </View>
       </BarCodeScanner>
@@ -92,6 +133,28 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background.primary,
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background.primary,
+    paddingHorizontal: Spacing.xl,
+  },
+  permissionCard: {
+    width: '100%',
+    maxWidth: 360,
+    padding: Spacing.xl,
+    backgroundColor: Colors.surface.primary,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    ...Shadows.shadow.lg,
+  },
   container: {
     flex: 1,
     width: '100%',
@@ -108,21 +171,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    paddingTop: 10,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    paddingTop: Spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
   },
   button: {
-    width: 50,
-    height: 50,
+    width: 56,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.neutreColor,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: BorderRadius.full,
+    ...Shadows.shadow.md,
   },
   text: {
     fontSize: 18,
     color: Colors.whiteColor,
   },
 });
+
+export default BarcodereaderComponenent;

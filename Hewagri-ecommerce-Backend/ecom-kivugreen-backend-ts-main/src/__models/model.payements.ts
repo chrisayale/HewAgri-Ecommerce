@@ -34,10 +34,10 @@ export const Paiements = connect.define<Payement>('__tbl_ecom_payements', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Paiements.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Paiements` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Paiements.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Paiements` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

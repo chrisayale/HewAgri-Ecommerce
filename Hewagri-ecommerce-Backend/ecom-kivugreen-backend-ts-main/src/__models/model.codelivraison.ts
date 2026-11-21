@@ -49,10 +49,10 @@ export const Codelivraisons = connect.define<Codes>('__tbl_ecom_codelivraisons',
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Codelivraisons.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Codelivraisons` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Codelivraisons.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Codelivraisons` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

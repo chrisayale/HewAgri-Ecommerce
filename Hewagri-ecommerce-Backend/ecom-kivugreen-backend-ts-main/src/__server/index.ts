@@ -45,17 +45,24 @@ const corsOptions = {
         "http://localhost:4005",    // Mobile POS PWA
         "http://localhost:8084",    // Expo Metro Web
         "http://localhost:8088",    // Expo Metro Web (alt port)
-        "http://localhost:8089",    // Expo Metro Web (alt port)
+        "http://localhost:8089",
+        "http://localhost:8092",    // Expo Metro Web
+        "http://localhost:8093",    // Mobile POS Web
+        "http://localhost:8095",    // Mobile POS Web (alt port)
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4003",
         "http://127.0.0.1:4005",
         "http://127.0.0.1:8084",
         "http://127.0.0.1:8088",
         "http://127.0.0.1:8089",
+        "http://127.0.0.1:8092",
+        "http://127.0.0.1:8093",    // Mobile POS Web
+        "http://127.0.0.1:8095",    // Mobile POS Web (alt port)
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin", "x-ecommerce-kgreen-api", "x-ecommerce-mobkgreen-api"],
+    optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));

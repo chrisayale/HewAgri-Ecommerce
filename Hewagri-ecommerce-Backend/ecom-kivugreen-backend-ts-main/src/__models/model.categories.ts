@@ -16,10 +16,10 @@ export const Categories = connect.define<Category>('__tbl_ecom_categories', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Categories.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Categories` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Categories.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Categories` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

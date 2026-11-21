@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform, Alert } from 'react-native';
-import { Colors } from '../../assets/colors/Colors';
+import { Colors, createStylesSafe } from '../../assets/styles/Styles';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { appname } from '../../assets/configs/configs';
-import { createStylesSafe } from '../../assets/styles/Styles';
 
 let BarCodeScanner;
 let Camera;

@@ -48,8 +48,8 @@ export function initAssociations() {
     Extras.belongsTo(Users, { foreignKey: 'id_user' });
 
     // Users -> Hasmembers
-    Users.hasMany(Hasmembers, { foreignKey: 'id_member', as: 'memberships' });
-    Hasmembers.belongsTo(Users, { foreignKey: 'id_member' });
+    Users.hasMany(Hasmembers, { foreignKey: 'TblEcomUserId', as: 'memberships' });
+    Hasmembers.belongsTo(Users, { foreignKey: 'TblEcomUserId' });
 
     console.log('✅ Associations initialized');
 }

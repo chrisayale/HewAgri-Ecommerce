@@ -183,10 +183,10 @@ export const StoreAsRegisterComponent = ({ isloading, zork = false }) => {
                     }}
                     disabled={isLoading}
                 >
-                    <>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
                         <MaterialIcons name='refresh' size={15} color={Colors.whiteColor} />
                         <Text style={{ fontFamily: "mons-b", color: Colors.whiteColor, marginLeft: 10 }}>Actualiser l'état de stock</Text>
-                    </>
+                    </View>
                 </TouchableHighlight>
             </View>
             <DialogBox ref={ref} isOverlayClickClose={false} />

@@ -17,10 +17,10 @@ export const Souscategories = connect.define<Souscategory>('__tbl_ecom_souscateg
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Souscategories.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Souscategories` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Souscategories.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Souscategories` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

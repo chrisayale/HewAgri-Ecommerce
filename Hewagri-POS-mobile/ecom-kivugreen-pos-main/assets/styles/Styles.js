@@ -1,17 +1,27 @@
-import { Colors } from "../colors/Colors";
-import { Dims } from "../dimensions/Dimemensions";
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet, Platform } from 'react-native';
+import {
+  Colors,
+  Typography,
+  Spacing,
+  BorderRadius,
+  Shadows,
+  ComponentTokens,
+  Layout,
+} from '../tokens/DesignTokens';
 
-// Helper pour nettoyer les valeurs undefined/null d'un objet de style
+// Helper to sanitize style values (remove undefined/null and web-incompatible props)
 export function sanitizeStyle(style) {
   if (!style || typeof style !== 'object') return style;
-  // Handle arrays
   if (Array.isArray(style)) {
     return style.map(item => sanitizeStyle(item)).filter(item => item !== undefined && item !== null);
   }
   const sanitized = {};
   for (const [key, value] of Object.entries(style)) {
     if (value !== undefined && value !== null) {
+      // Skip web-incompatible style properties
+      if (key === 'boxShadow' || (Platform.OS === 'web' && key === 'elevation')) {
+        continue;
+      }
       if (typeof value === 'object' && !Array.isArray(value)) {
         sanitized[key] = sanitizeStyle(value);
       } else if (typeof value !== 'function') {
@@ -22,15 +32,10 @@ export function sanitizeStyle(style) {
   return sanitized;
 }
 
-// Helper pour créer les styles avec gestion d'erreur
-// Accepte soit un objet de styles nommés { styleName: {...} }, soit un objet de style unitaire {...}
-// Si c'est un style unitaire, l'enveloppe dans { item: style } et retourne .item
+// Helper to safely create styles with error handling
 export function createStylesSafe(rawStyles, styleName = 'unknown') {
   const sanitized = sanitizeStyle(rawStyles);
 
-  // Détecter si c'est un style unitaire (pas de clés qui sont des noms de styles)
-  // Un style unitaire a des valeurs qui sont des primitives (strings, numbers) ou des objets de propriétés CSS
-  // Un dictionnaire de styles a des valeurs qui sont elles-mêmes des objets de style
   const isUnitaryStyle = Object.values(sanitized).some(
     v => v && typeof v === 'object' && !Array.isArray(v) &&
     Object.values(v).some(v2 => typeof v2 !== 'object' || v2 === null)
@@ -38,263 +43,793 @@ export function createStylesSafe(rawStyles, styleName = 'unknown') {
 
   try {
     if (isUnitaryStyle) {
-      // Style unitaire : l'envelopper et extraire
       return StyleSheet.create({ item: sanitized }).item;
     }
-    // Dictionnaire de styles nommés : créer directement
     return StyleSheet.create(sanitized);
   } catch (e) {
-    // Fallback silencieux : retourner l'objet sanitized sans StyleSheet.create
     return sanitized;
   }
 }
 
-// Valeurs par défaut définitives (ne dépendent d'aucun import)
-const DEFAULT_COLORS = {
-  primaryColor: "#048343",
-  secondaryColor: "#c822ff",
-  pillColor: "#EEEEEE",
-  successColor: "#048343",
-  dangerColor: "#FF1F00",
-  whiteColor: "#FFFF",
-  yellow: "#ccc92a",
-  darkColor: "#474747",
-  placeHolderColor: "#9C9696",
-  neutreColor: "#fff",
-  pInRGBA: "rgba(4,131,67,.2)",
-  dInRGBA: "rgba(255,31,0,.2)",
-  textColor: "#151E26",
-  greyColor: "#9C9696",
-  borderColor: "#E0E0E0",
-  inactiveColor: "#9E9E9E",
-};
+// ============================================================================
+// BASE STYLE PRIMITIVES
+// ============================================================================
 
-const DEFAULT_DIMS = {
-  iconsize: 18,
-  bigiconsize: 72,
-  bigtitletextsize: 25,
-  titletextsize: 13,
-  subtitletextsize: 13,
-  borderradius: 5,
-  iputtextsize: 14,
-  bigradius: 35,
-  smallradius: 20,
-  inputHeight: 48,
-  width: 375,
-  height: 667,
-};
+// Button base styles
+const _btnBase = sanitizeStyle({
+  borderRadius: BorderRadius.button,
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'row',
+  ...Shadows.shadow.sm,
+});
 
-// Fusion défensive : utilise l'import si dispo, sinon fallback, et pour chaque propriété assure une valeur
-const C = {
-  primaryColor: Colors?.primaryColor ?? DEFAULT_COLORS.primaryColor,
-  secondaryColor: Colors?.secondaryColor ?? DEFAULT_COLORS.secondaryColor,
-  pillColor: Colors?.pillColor ?? DEFAULT_COLORS.pillColor,
-  successColor: Colors?.successColor ?? DEFAULT_COLORS.successColor,
-  dangerColor: Colors?.dangerColor ?? DEFAULT_COLORS.dangerColor,
-  whiteColor: Colors?.whiteColor ?? DEFAULT_COLORS.whiteColor,
-  yellow: Colors?.yellow ?? DEFAULT_COLORS.yellow,
-  darkColor: Colors?.darkColor ?? DEFAULT_COLORS.darkColor,
-  placeHolderColor: Colors?.placeHolderColor ?? DEFAULT_COLORS.placeHolderColor,
-  neutreColor: Colors?.neutreColor ?? DEFAULT_COLORS.neutreColor,
-  pInRGBA: Colors?.pInRGBA ?? DEFAULT_COLORS.pInRGBA,
-  dInRGBA: Colors?.dInRGBA ?? DEFAULT_COLORS.dInRGBA,
-  textColor: Colors?.textColor ?? DEFAULT_COLORS.textColor,
-  greyColor: Colors?.greyColor ?? DEFAULT_COLORS.greyColor,
-  borderColor: Colors?.borderColor ?? DEFAULT_COLORS.borderColor,
-  inactiveColor: Colors?.inactiveColor ?? DEFAULT_COLORS.inactiveColor,
-};
+const _btnPrimary = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: Colors.primary[500],
+  ...Shadows.colored.primary,
+});
 
-const D = {
-  iconsize: Dims?.iconsize ?? DEFAULT_DIMS.iconsize,
-  bigiconsize: Dims?.bigiconsize ?? DEFAULT_DIMS.bigiconsize,
-  bigtitletextsize: Dims?.bigtitletextsize ?? DEFAULT_DIMS.bigtitletextsize,
-  titletextsize: Dims?.titletextsize ?? DEFAULT_DIMS.titletextsize,
-  subtitletextsize: Dims?.subtitletextsize ?? DEFAULT_DIMS.subtitletextsize,
-  borderradius: Dims?.borderradius ?? DEFAULT_DIMS.borderradius,
-  iputtextsize: Dims?.iputtextsize ?? DEFAULT_DIMS.iputtextsize,
-  bigradius: Dims?.bigradius ?? DEFAULT_DIMS.bigradius,
-  smallradius: Dims?.smallradius ?? DEFAULT_DIMS.smallradius,
-  inputHeight: Dims?.inputHeight ?? DEFAULT_DIMS.inputHeight,
-  width: Dims?.width ?? DEFAULT_DIMS.width,
-  height: Dims?.height ?? DEFAULT_DIMS.height,
-};
+const _btnSecondary = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: Colors.neutral[100],
+  borderWidth: 1,
+  borderColor: Colors.border.main,
+});
 
-// Styles bruts (objets JS purs) - utilisent le sanitizeStyle exporté
+const _btnOutline = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: 'transparent',
+  borderWidth: 1.5,
+  borderColor: Colors.primary[500],
+});
+
+const _btnGhost = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: 'transparent',
+});
+
+const _btnDanger = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: Colors.danger.main,
+  ...Shadows.colored.danger,
+});
+
+const _btnDisabled = sanitizeStyle({
+  ..._btnBase,
+  backgroundColor: Colors.neutral[300],
+  opacity: 0.6,
+});
+
+// Button sizes
+const _btnSizeSm = sanitizeStyle({
+  height: ComponentTokens.button.height.sm,
+  paddingHorizontal: ComponentTokens.button.paddingHorizontal.sm,
+});
+
+const _btnSizeMd = sanitizeStyle({
+  height: ComponentTokens.button.height.md,
+  paddingHorizontal: ComponentTokens.button.paddingHorizontal.md,
+});
+
+const _btnSizeLg = sanitizeStyle({
+  height: ComponentTokens.button.height.lg,
+  paddingHorizontal: ComponentTokens.button.paddingHorizontal.lg,
+});
+
+const _btnSizeXl = sanitizeStyle({
+  height: ComponentTokens.button.height.xl,
+  paddingHorizontal: ComponentTokens.button.paddingHorizontal.xl,
+});
+
+// Input base styles
+const _inputBase = sanitizeStyle({
+  borderRadius: BorderRadius.input,
+  borderWidth: ComponentTokens.input.borderWidth,
+  borderColor: Colors.border.main,
+  backgroundColor: Colors.surface.primary,
+  color: Colors.text.primary,
+  fontFamily: Typography.fontFamily.regular,
+  fontSize: ComponentTokens.input.fontSize,
+  paddingHorizontal: ComponentTokens.input.paddingHorizontal,
+  paddingVertical: ComponentTokens.input.paddingVertical,
+});
+
+const _inputFocused = sanitizeStyle({
+  ..._inputBase,
+  borderColor: Colors.border.focus,
+  borderWidth: 2,
+  ...Shadows.shadow.sm,
+});
+
+const _inputError = sanitizeStyle({
+  ..._inputBase,
+  borderColor: Colors.border.error,
+  borderWidth: 2,
+});
+
+const _inputDisabled = sanitizeStyle({
+  ..._inputBase,
+  backgroundColor: Colors.neutral[100],
+  color: Colors.text.disabled,
+  borderColor: Colors.border.light,
+});
+
+const _inputLabel = sanitizeStyle({
+  fontFamily: Typography.fontFamily.medium,
+  fontSize: Typography.fontSize.sm,
+  color: Colors.text.primary,
+  marginBottom: Spacing.fieldGap,
+});
+
+const _inputHelperText = sanitizeStyle({
+  fontFamily: Typography.fontFamily.regular,
+  fontSize: Typography.fontSize.xs,
+  color: Colors.text.tertiary,
+  marginTop: Spacing.xs,
+});
+
+const _inputErrorText = sanitizeStyle({
+  fontFamily: Typography.fontFamily.medium,
+  fontSize: Typography.fontSize.xs,
+  color: Colors.danger.main,
+  marginTop: Spacing.xs,
+});
+
+// Card base styles
+const _cardBase = sanitizeStyle({
+  backgroundColor: ComponentTokens.card.backgroundColor,
+  borderRadius: ComponentTokens.card.borderRadius,
+  borderWidth: ComponentTokens.card.borderWidth,
+  borderColor: Colors.border.light,
+  padding: ComponentTokens.card.padding,
+  ...ComponentTokens.card.shadow,
+});
+
+const _cardElevated = sanitizeStyle({
+  ..._cardBase,
+  ...Shadows.shadow.md,
+});
+
+const _cardOutlined = sanitizeStyle({
+  ..._cardBase,
+  borderWidth: 1,
+  borderColor: Colors.border.main,
+  ...Shadows.shadow.none,
+});
+
+const _cardFilled = sanitizeStyle({
+  ..._cardBase,
+  backgroundColor: Colors.surface.secondary,
+  borderWidth: 0,
+  ...Shadows.shadow.none,
+});
+
+// Screen container
+const _screenContainer = sanitizeStyle({
+  flex: 1,
+  backgroundColor: Colors.background.primary,
+  paddingHorizontal: Spacing.screenPaddingHorizontal,
+  paddingVertical: Spacing.screenPaddingVertical,
+});
+
+const _screenContainerCentered = sanitizeStyle({
+  ..._screenContainer,
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+// Section styles
+const _section = sanitizeStyle({
+  width: '100%',
+  marginBottom: Spacing.sectionGap,
+});
+
+const _sectionTitle = sanitizeStyle({
+  fontFamily: Typography.fontFamily.bold,
+  fontSize: Typography.fontSize.xl,
+  color: Colors.text.primary,
+  marginBottom: Spacing.md,
+});
+
+const _sectionSubtitle = sanitizeStyle({
+  fontFamily: Typography.fontFamily.regular,
+  fontSize: Typography.fontSize.md,
+  color: Colors.text.secondary,
+  marginBottom: Spacing.lg,
+});
+
+// Divider
+const _divider = sanitizeStyle({
+  height: ComponentTokens.divider.thickness,
+  backgroundColor: Colors.border.light,
+  marginVertical: ComponentTokens.divider.verticalMargin,
+});
+
+const _dividerVertical = sanitizeStyle({
+  width: ComponentTokens.divider.thickness,
+  backgroundColor: Colors.border.light,
+  marginHorizontal: ComponentTokens.divider.verticalMargin,
+});
+
+// Avatar
+const _avatarBase = sanitizeStyle({
+  borderRadius: ComponentTokens.avatar.borderRadius,
+  backgroundColor: Colors.neutral[200],
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+// Badge
+const _badgeBase = sanitizeStyle({
+  minWidth: ComponentTokens.badge.minWidth,
+  height: ComponentTokens.badge.height,
+  borderRadius: ComponentTokens.badge.borderRadius,
+  paddingHorizontal: ComponentTokens.badge.paddingHorizontal,
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+const _badgePrimary = sanitizeStyle({
+  ..._badgeBase,
+  backgroundColor: Colors.primary[500],
+});
+
+const _badgeSuccess = sanitizeStyle({
+  ..._badgeBase,
+  backgroundColor: Colors.success.main,
+});
+
+const _badgeWarning = sanitizeStyle({
+  ..._badgeBase,
+  backgroundColor: Colors.warning.main,
+});
+
+const _badgeDanger = sanitizeStyle({
+  ..._badgeBase,
+  backgroundColor: Colors.danger.main,
+});
+
+const _badgeNeutral = sanitizeStyle({
+  ..._badgeBase,
+  backgroundColor: Colors.neutral[200],
+});
+
+// Chip
+const _chipBase = sanitizeStyle({
+  height: ComponentTokens.chip.height,
+  paddingHorizontal: ComponentTokens.chip.paddingHorizontal,
+  borderRadius: ComponentTokens.chip.borderRadius,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: Spacing.xs,
+});
+
+const _chipOutline = sanitizeStyle({
+  ..._chipBase,
+  backgroundColor: 'transparent',
+  borderWidth: 1,
+  borderColor: Colors.border.main,
+});
+
+const _chipFilled = sanitizeStyle({
+  ..._chipBase,
+  backgroundColor: Colors.neutral[100],
+});
+
+const _chipPrimary = sanitizeStyle({
+  ..._chipBase,
+  backgroundColor: Colors.primary[500],
+});
+
+// Modal
+const _modalOverlay = sanitizeStyle({
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: Spacing.md,
+  zIndex: Layout.zIndex.modalBackdrop,
+});
+
+const _modalContent = sanitizeStyle({
+  backgroundColor: Colors.surface.primary,
+  borderRadius: ComponentTokens.modal.borderRadius,
+  padding: ComponentTokens.modal.padding,
+  maxWidth: ComponentTokens.modal.maxWidth,
+  width: '100%',
+  maxHeight: '90%',
+  ...Shadows.shadow.xl,
+  zIndex: Layout.zIndex.modal,
+});
+
+// List item
+const _listItem = sanitizeStyle({
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: ComponentTokens.listItem.paddingHorizontal,
+  paddingVertical: ComponentTokens.listItem.paddingVertical,
+  minHeight: ComponentTokens.listItem.minHeight,
+  backgroundColor: Colors.surface.primary,
+  borderBottomWidth: 1,
+  borderBottomColor: Colors.border.light,
+});
+
+const _listItemLast = sanitizeStyle({
+  ..._listItem,
+  borderBottomWidth: 0,
+});
+
+// Typography styles
+const _textStyles = sanitizeStyle({
+  // Headings
+  h1: { ...Typography.styles.h1, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary },
+  h2: { ...Typography.styles.h2, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary },
+  h3: { ...Typography.styles.h3, fontFamily: Typography.fontFamily.bold, color: Colors.text.primary },
+  h4: { ...Typography.styles.h4, fontFamily: Typography.fontFamily.semibold, color: Colors.text.primary },
+  h5: { ...Typography.styles.h5, fontFamily: Typography.fontFamily.semibold, color: Colors.text.primary },
+  h6: { ...Typography.styles.h6, fontFamily: Typography.fontFamily.semibold, color: Colors.text.primary },
+
+  // Body
+  bodyLarge: { ...Typography.styles.bodyLarge, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary },
+  bodyMedium: { ...Typography.styles.bodyMedium, fontFamily: Typography.fontFamily.regular, color: Colors.text.primary },
+  bodySmall: { ...Typography.styles.bodySmall, fontFamily: Typography.fontFamily.regular, color: Colors.text.secondary },
+
+  // Labels
+  labelLarge: { ...Typography.styles.labelLarge, fontFamily: Typography.fontFamily.medium, color: Colors.text.primary },
+  labelMedium: { ...Typography.styles.labelMedium, fontFamily: Typography.fontFamily.medium, color: Colors.text.primary },
+  labelSmall: { ...Typography.styles.labelSmall, fontFamily: Typography.fontFamily.medium, color: Colors.text.tertiary },
+
+  // Button
+  buttonLarge: { ...Typography.styles.buttonLarge, fontFamily: Typography.fontFamily.semibold, color: Colors.text.inverse },
+  buttonMedium: { ...Typography.styles.buttonMedium, fontFamily: Typography.fontFamily.semibold, color: Colors.text.inverse },
+  buttonSmall: { ...Typography.styles.buttonSmall, fontFamily: Typography.fontFamily.semibold, color: Colors.text.inverse },
+
+  // Caption
+  caption: { ...Typography.styles.caption, fontFamily: Typography.fontFamily.regular, color: Colors.text.tertiary },
+  overline: { ...Typography.styles.overline, fontFamily: Typography.fontFamily.medium, color: Colors.text.tertiary },
+
+  // Special
+  link: { fontFamily: Typography.fontFamily.medium, fontSize: Typography.fontSize.base, color: Colors.primary[500], textDecorationLine: 'underline' },
+  linkSmall: { fontFamily: Typography.fontFamily.medium, fontSize: Typography.fontSize.sm, color: Colors.primary[500], textDecorationLine: 'underline' },
+});
+
+// Form field group
+const _fieldGroup = sanitizeStyle({
+  width: '100%',
+  marginBottom: Spacing.fieldGroupGap,
+});
+
+const _fieldRow = sanitizeStyle({
+  flexDirection: 'row',
+  gap: Spacing.md,
+  width: '100%',
+});
+
+const _fieldRowItem = sanitizeStyle({
+  flex: 1,
+});
+
+// Grid
+const _gridContainer = sanitizeStyle({
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginHorizontal: -Spacing.sm,
+});
+
+const _gridItem = sanitizeStyle({
+  paddingHorizontal: Spacing.sm,
+  marginBottom: Spacing.md,
+});
+
+// Flex utilities
+const _flex = sanitizeStyle({
+  flex: 1,
+});
+
+const _flexRow = sanitizeStyle({
+  flexDirection: 'row',
+  alignItems: 'center',
+});
+
+const _flexRowBetween = sanitizeStyle({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+});
+
+const _flexRowCenter = sanitizeStyle({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+const _flexCol = sanitizeStyle({
+  flexDirection: 'column',
+});
+
+const _flexColCenter = sanitizeStyle({
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+// Position utilities
+const _absoluteFill = sanitizeStyle({
+  ...StyleSheet.absoluteFillObject,
+});
+
+const _absoluteCenter = sanitizeStyle({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: [{ translateX: -50 }, { translateY: -50 }],
+});
+
+// Touchable/Interaction states
+const _touchableOpacity = sanitizeStyle({
+  activeOpacity: 0.7,
+});
+
+const _touchableHighlight = sanitizeStyle({
+  underlayColor: Colors.neutral[200],
+});
+
+// Loading/Spinner
+const _loadingContainer = sanitizeStyle({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: Colors.overlay.light,
+});
+
+const _loadingOverlay = sanitizeStyle({
+  ...StyleSheet.absoluteFillObject,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: Colors.overlay.medium,
+  zIndex: Layout.zIndex.toast,
+});
+
+// Error/Empty states
+const _emptyState = sanitizeStyle({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingHorizontal: Spacing.xl,
+  paddingVertical: Spacing['3xl'],
+});
+
+const _emptyStateIcon = sanitizeStyle({
+  marginBottom: Spacing.lg,
+  opacity: 0.5,
+});
+
+const _emptyStateTitle = sanitizeStyle({
+  ..._textStyles.h4,
+  textAlign: 'center',
+  marginBottom: Spacing.sm,
+});
+
+const _emptyStateMessage = sanitizeStyle({
+  ..._textStyles.bodyMedium,
+  textAlign: 'center',
+  color: Colors.text.secondary,
+  marginBottom: Spacing.lg,
+});
+
+// ============================================================================
+// COMPOSED COMPONENT STYLES (ready to use)
+// ============================================================================
+
+// Button variants (composed)
+const btn = _btnSizeMd;
+const btnPrimary = { ..._btnPrimary, ..._btnSizeMd };
+const btnPrimarySm = { ..._btnPrimary, ..._btnSizeSm };
+const btnPrimaryLg = { ..._btnPrimary, ..._btnSizeLg };
+const btnPrimaryXl = { ..._btnPrimary, ..._btnSizeXl };
+
+const btnSecondary = { ..._btnSecondary, ..._btnSizeMd };
+const btnSecondarySm = { ..._btnSecondary, ..._btnSizeSm };
+const btnSecondaryLg = { ..._btnSecondary, ..._btnSizeLg };
+
+const btnOutline = { ..._btnOutline, ..._btnSizeMd };
+const btnOutlineSm = { ..._btnOutline, ..._btnSizeSm };
+const btnOutlineLg = { ..._btnOutline, ..._btnSizeLg };
+
+const btnGhost = { ..._btnGhost, ..._btnSizeMd };
+const btnGhostSm = { ..._btnGhost, ..._btnSizeSm };
+const btnGhostLg = { ..._btnGhost, ..._btnSizeLg };
+
+const btnDanger = { ..._btnDanger, ..._btnSizeMd };
+const btnDangerSm = { ..._btnDanger, ..._btnSizeSm };
+const btnDangerLg = { ..._btnDanger, ..._btnSizeLg };
+
+const btnDisabled = { ..._btnDisabled, ..._btnSizeMd };
+
+// Input variants
+const input = _inputBase;
+const inputFocused = _inputFocused;
+const inputError = _inputError;
+const inputDisabled = _inputDisabled;
+const inputLabel = _inputLabel;
+const inputHelperText = _inputHelperText;
+const inputErrorText = _inputErrorText;
+
+// Card variants
+const card = _cardBase;
+const cardElevated = _cardElevated;
+const cardOutlined = _cardOutlined;
+const cardFilled = _cardFilled;
+
+// Screen containers
+const screenContainer = _screenContainer;
+const screenContainerCentered = _screenContainerCentered;
+
+// Section
+const section = _section;
+const sectionTitle = _sectionTitle;
+const sectionSubtitle = _sectionSubtitle;
+
+// Divider
+const divider = _divider;
+const dividerVertical = _dividerVertical;
+
+// Avatar sizes
+const avatarXs = { ..._avatarBase, width: ComponentTokens.avatar.size.xs, height: ComponentTokens.avatar.size.xs };
+const avatarSm = { ..._avatarBase, width: ComponentTokens.avatar.size.sm, height: ComponentTokens.avatar.size.sm };
+const avatarMd = { ..._avatarBase, width: ComponentTokens.avatar.size.md, height: ComponentTokens.avatar.size.md };
+const avatarLg = { ..._avatarBase, width: ComponentTokens.avatar.size.lg, height: ComponentTokens.avatar.size.lg };
+const avatarXl = { ..._avatarBase, width: ComponentTokens.avatar.size.xl, height: ComponentTokens.avatar.size.xl };
+const avatar2xl = { ..._avatarBase, width: ComponentTokens.avatar.size['2xl'], height: ComponentTokens.avatar.size['2xl'] };
+
+// Badge variants
+const badge = _badgePrimary;
+const badgePrimary = _badgePrimary;
+const badgeSuccess = _badgeSuccess;
+const badgeWarning = _badgeWarning;
+const badgeDanger = _badgeDanger;
+const badgeNeutral = _badgeNeutral;
+
+// Chip variants
+const chip = _chipOutline;
+const chipOutline = _chipOutline;
+const chipFilled = _chipFilled;
+const chipPrimary = _chipPrimary;
+
+// Modal
+const modalOverlay = _modalOverlay;
+const modalContent = _modalContent;
+
+// List item
+const listItem = _listItem;
+const listItemLast = _listItemLast;
+
+// Typography
+const text = _textStyles;
+
+// Form
+const fieldGroup = _fieldGroup;
+const fieldRow = _fieldRow;
+const fieldRowItem = _fieldRowItem;
+
+// Grid
+const gridContainer = _gridContainer;
+const gridItem = { ..._gridItem, width: '50%' };
+const gridItemFull = { ..._gridItem, width: '100%' };
+const gridItemThird = { ..._gridItem, width: '33.33%' };
+const gridItemQuarter = { ..._gridItem, width: '25%' };
+
+// Flex utilities
+const flex = _flex;
+const flexRow = _flexRow;
+const flexRowBetween = _flexRowBetween;
+const flexRowCenter = _flexRowCenter;
+const flexCol = _flexCol;
+const flexColCenter = _flexColCenter;
+
+// Position
+const absoluteFill = _absoluteFill;
+const absoluteCenter = _absoluteCenter;
+
+// Interaction
+const touchableOpacity = _touchableOpacity;
+const touchableHighlight = _touchableHighlight;
+
+// Loading
+const loadingContainer = _loadingContainer;
+const loadingOverlay = _loadingOverlay;
+
+// Empty state
+const emptyState = _emptyState;
+const emptyStateIcon = _emptyStateIcon;
+const emptyStateTitle = _emptyStateTitle;
+const emptyStateMessage = _emptyStateMessage;
+
+// ============================================================================
+// LEGACY EXPORTS (for backward compatibility)
+// ============================================================================
 const _btnHome = sanitizeStyle({
-  width: "100%",
+  width: '100%',
   height: 120,
-  alignSelf: "center",
-  padding: 10,
-  backgroundColor: C.pillColor,
-  borderRadius: 10,
-  elevation: 4,
-  borderRightColor: C.primaryColor,
-  borderLeftWidth: 2,
-  borderLeftColor: C.primaryColor,
+  alignSelf: 'center',
+  padding: Spacing.md,
+  backgroundColor: Colors.pillColor,
+  borderRadius: BorderRadius.card,
+  ...Shadows.shadow.md,
+  borderLeftWidth: 3,
+  borderLeftColor: Colors.primary[500],
 });
 
 const _inputGroup = sanitizeStyle({
   container: {
-    width: "100%",
-    borderColor: C.primaryColor,
-    borderWidth: 0.6,
-    marginTop: 5,
-    borderRadius: D.borderradius,
-    height: D.inputHeight,
-    flexDirection: "row",
-    overflow: "hidden",
+    width: '100%',
+    borderColor: Colors.primary[500],
+    borderWidth: 1,
+    marginTop: Spacing.xs,
+    borderRadius: BorderRadius.input,
+    height: ComponentTokens.input.height.md,
+    flexDirection: 'row',
+    overflow: 'hidden',
   },
   iconcontainer: {
-    width: "20%",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
+    width: '20%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
   inputcontainer: {
-    width: "80%",
-    justifyContent: "center",
-    alignItems: "center",
+    width: '80%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   input: {
-    color: C.primaryColor,
-    backgroundColor: C.whiteColor,
-    height: "100%",
-    width: "100%",
+    color: Colors.primary[500],
+    backgroundColor: Colors.whiteColor,
+    height: '100%',
+    width: '100%',
     paddingLeft: 25,
-    fontSize: D.iputtextsize,
+    fontSize: Typography.fontSize.base,
+    fontFamily: Typography.fontFamily.regular,
   },
   incon: {
-    width: "20%",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
+    width: '20%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
   },
   label: {
-    fontFamily: "mons",
-    paddingLeft: 10,
-    color: C.primaryColor,
+    fontFamily: Typography.fontFamily.regular,
+    paddingLeft: Spacing.sm,
+    color: Colors.primary[500],
+    fontSize: Typography.fontSize.sm,
   },
 });
 
 const _btnHeader = sanitizeStyle({
-  borderRadius: 12,
-  alignItems: "center",
+  borderRadius: BorderRadius.md,
+  alignItems: 'center',
   padding: 0,
-  justifyContent: "center",
-  backgroundColor: C.primaryColor,
-  borderColor: C.whiteColor,
+  justifyContent: 'center',
+  backgroundColor: Colors.primary[500],
+  borderColor: Colors.whiteColor,
   borderWidth: 0.4,
-  elevation: 2,
+  ...Shadows.shadow.sm,
+  minWidth: 48,
+  height: 48,
 });
 
-const _btn = sanitizeStyle({
-  width: "100%",
-  backgroundColor: C.primaryColor,
-  height: D.inputHeight,
-  borderRadius: D.borderradius,
-  justifyContent: "center",
-  alignItems: "center",
+const _btnLegacy = sanitizeStyle({
+  width: '100%',
+  backgroundColor: Colors.primary[500],
+  height: ComponentTokens.button.height.md,
+  borderRadius: BorderRadius.button,
+  justifyContent: 'center',
+  alignItems: 'center',
+  ...Shadows.shadow.sm,
 });
 
 const _cel = sanitizeStyle({
-  color: C.primaryColor,
-  backgroundColor: C.pillColor,
-  margin: 6,
+  color: Colors.primary[500],
+  backgroundColor: Colors.pillColor,
+  margin: Spacing.sm,
   height: 38,
   width: 38,
-  textAlign: "center",
-  fontSize: D.iputtextsize + 8,
-  // justifyContent removed - not valid for Text components
+  textAlign: 'center',
+  fontSize: Typography.fontSize.lg,
+  borderRadius: BorderRadius.full,
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 const _dropdown = sanitizeStyle({
   dropdownButtonStyle: {
-    width: 200,
-    height: 50,
-    backgroundColor: "#E9ECEF",
-    borderRadius: 12,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
+    width: '100%',
+    height: ComponentTokens.input.height.md,
+    backgroundColor: Colors.surface.primary,
+    borderRadius: BorderRadius.input,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: ComponentTokens.input.paddingHorizontal,
+    borderWidth: 1,
+    borderColor: Colors.border.main,
   },
   dropdownButtonTxtStyle: {
     flex: 1,
-    fontSize: D.iputtextsize,
-    color: C.darkColor,
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.primary,
+    fontFamily: Typography.fontFamily.regular,
   },
   dropdownButtonArrowStyle: {
-    fontSize: 28,
+    fontSize: 20,
+    color: Colors.text.tertiary,
   },
   dropdownButtonIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
+    fontSize: 20,
+    marginRight: Spacing.sm,
+    color: Colors.text.tertiary,
   },
   dropdownMenuStyle: {
-    backgroundColor: C.whiteColor,
-    borderRadius: 0,
+    backgroundColor: Colors.surface.primary,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border.main,
+    ...Shadows.shadow.md,
   },
   dropdownItemStyle: {
-    width: "100%",
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 20,
+    width: '100%',
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
   },
   dropdownItemTxtStyle: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#151E26",
+    fontSize: Typography.fontSize.base,
+    fontFamily: Typography.fontFamily.regular,
+    color: Colors.text.primary,
   },
   dropdownItemIconStyle: {
-    fontSize: 28,
-    marginRight: 8,
+    fontSize: 20,
+    marginRight: Spacing.sm,
   },
 });
 
-// Convert iOS shadow props to boxShadow for web
-const _btnCircleStyle = {
-  width: 60,
-  height: 60,
-  borderRadius: 35,
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: C.primaryColor,
-  padding: 10,
-  bottom: 30,
-  // Platform-specific shadows
-  ...(Platform.OS === 'web'
-    ? { boxShadow: '0 0.5px 1.41px rgba(0,0,0,0.2)' }
-    : {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 0.5 },
-        shadowOpacity: 0.2,
-        shadowRadius: 1.41,
-        elevation: 1,
-      }),
-};
+const _btnCircleStyle = sanitizeStyle({
+  width: 56,
+  height: 56,
+  borderRadius: BorderRadius.full,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: Colors.primary[500],
+  padding: Spacing.sm,
+  ...Shadows.shadow.md,
+});
 
 const _styles = sanitizeStyle({
   container: {
     flex: 1,
-    padding: 20,
+    padding: Spacing.md,
   },
   button: {
-    marginVertical: 5,
+    marginVertical: Spacing.xs,
   },
   bottomBar: {
-    position: "absolute",
-    bottom: -7,
-    padding: 0,
-    margin: 0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: Spacing.md,
   },
   btnCircle: _btnCircleStyle,
   imgCircle: {
     width: 30,
     height: 30,
-    tintColor: "gray",
+    tintColor: Colors.text.tertiary,
+    borderRadius: BorderRadius.full,
   },
   img: {
     width: 30,
@@ -302,29 +837,241 @@ const _styles = sanitizeStyle({
   },
 });
 
-// Regrouper tous les styles dans un seul dictionnaire pour un seul appel à StyleSheet.create
-// StyleSheet.create attend { styleName: { ...properties } }, pas un objet de propriétés direct
+// ============================================================================
+// CREATE STYLESHEET
+// ============================================================================
 const _allRawStyles = {
+  // New design system styles
+  btn,
+  btnPrimary,
+  btnPrimarySm,
+  btnPrimaryLg,
+  btnPrimaryXl,
+  btnSecondary,
+  btnSecondarySm,
+  btnSecondaryLg,
+  btnOutline,
+  btnOutlineSm,
+  btnOutlineLg,
+  btnGhost,
+  btnGhostSm,
+  btnGhostLg,
+  btnDanger,
+  btnDangerSm,
+  btnDangerLg,
+  btnDisabled,
+
+  // Use raw (pre-StyleSheet) versions for styles that need composition
+  input: _inputBase,
+  inputFocused: _inputFocused,
+  inputError: _inputError,
+  inputDisabled: _inputDisabled,
+  inputLabel: _inputLabel,
+  inputHelperText: _inputHelperText,
+  inputErrorText: _inputErrorText,
+
+  card: _cardBase,
+  cardElevated: _cardElevated,
+  cardOutlined: _cardOutlined,
+  cardFilled: _cardFilled,
+
+  screenContainer: _screenContainer,
+  screenContainerCentered: _screenContainerCentered,
+
+  section: _section,
+  sectionTitle: _sectionTitle,
+  sectionSubtitle: _sectionSubtitle,
+
+  divider: _divider,
+  dividerVertical: _dividerVertical,
+
+  avatarXs,
+  avatarSm,
+  avatarMd,
+  avatarLg,
+  avatarXl,
+  avatar2xl,
+
+  badge,
+  badgePrimary,
+  badgeSuccess,
+  badgeWarning,
+  badgeDanger,
+  badgeNeutral,
+
+  chip,
+  chipOutline,
+  chipFilled,
+  chipPrimary,
+
+  modalOverlay,
+  modalContent,
+
+  listItem,
+  listItemLast,
+
+  text,
+  fieldGroup,
+  fieldRow,
+  fieldRowItem,
+
+  gridContainer,
+  gridItem,
+  gridItemFull,
+  gridItemThird,
+  gridItemQuarter,
+
+  flex,
+  flexRow,
+  flexRowBetween,
+  flexRowCenter,
+  flexCol,
+  flexColCenter,
+
+  absoluteFill,
+  absoluteCenter,
+
+  touchableOpacity,
+  touchableHighlight,
+
+  loadingContainer,
+  loadingOverlay,
+
+  emptyState,
+  emptyStateIcon,
+  emptyStateTitle,
+  emptyStateMessage,
+
+  // Legacy styles (for backward compatibility)
   btnHome: _btnHome,
   inputGroup: _inputGroup,
   btnHeader: _btnHeader,
-  btn: _btn,
+  btn: _btnLegacy,
   cel: _cel,
   dropdown: _dropdown,
   styles: _styles,
 };
 
-// Un seul appel à StyleSheet.create pour tous les styles
 const _allStyles = StyleSheet.create(_allRawStyles);
 
-// Extraire chaque style nommé du résultat
-export const btnHome = _allStyles.btnHome;
-export const inputGroup = _allStyles.inputGroup;
-export const btnHeader = _allStyles.btnHeader;
-export const btn = _allStyles.btn;
-export const cel = _allStyles.cel;
-export const dropdown = _allStyles.dropdown;
-export const styles = _allStyles.styles;
+// ============================================================================
+// EXPORTS
+// ============================================================================
+// New design system - button variants (already declared as const, export them)
+export {
+  btn,
+  btnPrimary,
+  btnPrimarySm,
+  btnPrimaryLg,
+  btnPrimaryXl,
+  btnSecondary,
+  btnSecondarySm,
+  btnSecondaryLg,
+  btnOutline,
+  btnOutlineSm,
+  btnOutlineLg,
+  btnGhost,
+  btnGhostSm,
+  btnGhostLg,
+  btnDanger,
+  btnDangerSm,
+  btnDangerLg,
+  btnDisabled,
 
-// Export des styles bruts pour les cas où StyleSheet.create n'est pas voulu
+  // Input styles - use raw (pre-StyleSheet) versions for composition
+  input,
+  inputFocused,
+  inputError,
+  inputDisabled,
+  inputLabel,
+  inputHelperText,
+  inputErrorText,
+
+  // Card styles - use raw versions for composition
+  card,
+  cardElevated,
+  cardOutlined,
+  cardFilled,
+
+  screenContainer,
+  screenContainerCentered,
+
+  section,
+  sectionTitle,
+  sectionSubtitle,
+
+  divider,
+  dividerVertical,
+
+  avatarXs,
+  avatarSm,
+  avatarMd,
+  avatarLg,
+  avatarXl,
+  avatar2xl,
+
+  badge,
+  badgePrimary,
+  badgeSuccess,
+  badgeWarning,
+  badgeDanger,
+  badgeNeutral,
+
+  chip,
+  chipOutline,
+  chipFilled,
+  chipPrimary,
+
+  modalOverlay,
+  modalContent,
+
+  listItem,
+  listItemLast,
+
+  text,
+  fieldGroup,
+  fieldRow,
+  fieldRowItem,
+
+  gridContainer,
+  gridItem,
+  gridItemFull,
+  gridItemThird,
+  gridItemQuarter,
+
+  flex,
+  flexRow,
+  flexRowBetween,
+  flexRowCenter,
+  flexCol,
+  flexColCenter,
+
+  absoluteFill,
+  absoluteCenter,
+
+  touchableOpacity,
+  touchableHighlight,
+
+  loadingContainer,
+  loadingOverlay,
+
+  emptyState,
+  emptyStateIcon,
+  emptyStateTitle,
+  emptyStateMessage,
+};
+
+// Legacy exports (from _allRawStyles which has StyleSheet-created versions for legacy)
+export const btnHome = _allRawStyles.btnHome;
+export const inputGroup = _allRawStyles.inputGroup;
+export const btnHeader = _allRawStyles.btnHeader;
+export const btnLegacy = _allRawStyles.btn;  // renamed from 'btn' to avoid conflict with const btn above
+export const cel = _allRawStyles.cel;
+export const dropdown = _allRawStyles.dropdown;
+export const styles = _allRawStyles.styles;
+
+// Raw styles export for cases where StyleSheet.create is not wanted
 export const rawStyles = _allRawStyles;
+
+// Re-export tokens for convenience
+export { Colors, Typography, Spacing, BorderRadius, Shadows, ComponentTokens, Layout, Motion, IconSizes, Responsive } from '../tokens/DesignTokens';

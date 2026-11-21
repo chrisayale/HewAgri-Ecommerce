@@ -25,10 +25,10 @@ export const Newsletters = connect.define<News>('__tbl_ecom_newsletters', {
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Newsletters.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Newsletters` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Newsletters.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Newsletters` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

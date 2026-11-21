@@ -27,10 +27,10 @@ export const Typelivraisons = connect.define<Type>('__tbl_ecom_typelivraisons', 
 
 }, { paranoid: true, timestamps: false, freezeTableName: true });
 
-Typelivraisons.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Typelivraisons` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Typelivraisons.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Typelivraisons` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

@@ -4,12 +4,11 @@ import * as Fonts from 'expo-font';
 import { onDeconnextion, onRunExternalRQST, onRunRemoveQRY, onRunRetrieveQRY } from '../../services/communications';
 import { Loader } from '../../components/Loader/comp.loader';
 import { appname, appnamecompangyname } from '../../assets/configs/configs';
-import { Colors } from '../../assets/colors/Colors';
+import { Colors, btn } from '../../assets/styles/Styles';
 import { tbl_users } from '../../services/tables/tables';
 import Snackbar from 'react-native-snackbar'
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { Dims } from '../../assets/dimensions/Dimemensions';
-import { btn } from '../../assets/styles/Styles';
 import Netinfo from '@react-native-community/netinfo';
 import { routes } from '../../assets/helper/helper.routes';
 
@@ -114,7 +113,29 @@ export const LoadingSceen = ({ navigation }) => {
             global.idcooperative = idcooperative;
             console.log('[LoadingScreen] User found:', { id: user.id, typeaccount, idcooperative });
 
-            switch (parseInt(typeaccount)) {
+            // Strictly allow ONLY typeaccount=2 (Coop Admin) and typeaccount=1 (Livreur)
+            // Reject role 5 (client), role 1 (super_admin) without cooperative, etc.
+            const validTypeAccount = parseInt(typeaccount);
+            if (validTypeAccount !== 1 && validTypeAccount !== 2) {
+              console.log('[LoadingScreen] Invalid typeaccount:', typeaccount, '- redirecting to auth');
+              const errorMsg = "Accès refusé : seuls les comptes Coopérative et Livreur peuvent se connecter au POS.";
+              setError({
+                message: errorMsg,
+                title: "Accès refusé",
+                description: errorMsg,
+                isDBError: false,
+                isNetworkError: false
+              });
+              setisloading(false);
+              Snackbar.show({
+                text: errorMsg,
+                duration: Snackbar.LENGTH_LONG,
+                backgroundColor: Colors.dangerColor
+              });
+              return;
+            }
+
+            switch (validTypeAccount) {
               case 2: // Cooperative user - validate with backend
                 console.log('[LoadingScreen] Type 2 user, validating cooperative with backend...');
                 // Check if token exists and looks valid (not a test token)
@@ -145,8 +166,8 @@ export const LoadingSceen = ({ navigation }) => {
                   }
                 });
                 break;
-              case 1: // Simple user
-                console.log('[LoadingScreen] Type 1 user, navigating to tabs');
+              case 1: // Livreur
+                console.log('[LoadingScreen] Type 1 user (Livreur), navigating to tabs');
                 navigateToTabs(user);
                 break;
               default:

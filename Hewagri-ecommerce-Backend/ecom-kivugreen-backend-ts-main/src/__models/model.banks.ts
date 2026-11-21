@@ -51,10 +51,10 @@ export const Banks = connect.define<Bank>('__tbl_ecom_banks', {
 
 }, { paranoid: true, timestamps: true });
 
-Banks.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Banks` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Banks.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Banks` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

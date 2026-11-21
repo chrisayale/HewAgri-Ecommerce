@@ -91,10 +91,10 @@ export const Hasproducts = connect.define<Hasproduit>('__tbl_ecom_hasproducts', 
     ]
 });
 
-Hasproducts.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Hasproducts` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Hasproducts.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Hasproducts` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });

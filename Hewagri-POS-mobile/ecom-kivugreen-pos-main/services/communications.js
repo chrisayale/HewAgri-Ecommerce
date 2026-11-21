@@ -27,32 +27,37 @@ export const timeout = 25000;
 export const onRunInsertQRY = async ({ columns, dot, table, values, options }, cb) => {
     try {
         console.log('[communications] onRunInsertQRY: inserting into', table);
+        console.log('[communications] Columns:', columns);
+        console.log('[communications] Values:', values);
         // Extract the realid (first value) to fetch the specific record after insert
         const realid = values && values[0] ? values[0] : null;
         db.transaction(
             (tx) => {
+                // Insert first, then select in the success callback to ensure proper order
                 tx.executeSql(`insert into ${table} (${columns}) values (${dot})`, values,
-                    (_, result) => {
-                        console.log('[communications] Insert result:', result);
+                    (_, insertResult) => {
+                        console.log('[communications] Insert result:', insertResult);
+                        // Select the specific record by id (which equals realid for real users)
+                        // Seed users have uuid as id, real users have realid as id
+                        const selectSql = realid
+                            ? `select * from ${table} where id = '${realid}'`
+                            : `select * from ${table} order by crearedon desc limit 1`;
+                        console.log('[communications] Select SQL:', selectSql);
+                        tx.executeSql(selectSql, [], (_, { rows }) => {
+                            console.log('[communications] Select after insert, rows:', rows);
+                            const result = rows && rows['_array'] && rows['_array'][0] ? rows['_array'][0] : null;
+                            console.log('[communications] Inserted record:', result);
+                            cb(undefined, result);
+                        }, (err) => {
+                            console.error('[communications] Select after insert error:', err);
+                            cb(err, undefined);
+                        });
                     },
                     (err) => {
                         console.error('[communications] Insert error:', err);
+                        cb(err, undefined);
                     }
                 );
-                // Select the specific record by id (which equals realid for real users)
-                // Seed users have uuid as id, real users have realid as id
-                const selectSql = realid
-                    ? `select * from ${table} where id = '${realid}'`
-                    : `select * from ${table} order by crearedon desc limit 1`;
-                tx.executeSql(selectSql, [], (_, { rows }) => {
-                    console.log('[communications] Select after insert, rows:', rows);
-                    const result = rows && rows['_array'] && rows['_array'][0] ? rows['_array'][0] : null;
-                    console.log('[communications] Inserted record:', result);
-                    cb(undefined, result);
-                }, (err) => {
-                    console.error('[communications] Select after insert error:', err);
-                    cb(err, undefined);
-                });
             },
             (err) => {
                 console.error('[communications] Insert transaction error:', err);

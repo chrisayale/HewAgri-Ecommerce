@@ -51,10 +51,10 @@ export const Extras = connect.define<Extra>('__tbl_ecom_extras', { // as carte m
 
 }, { paranoid: true, timestamps: true });
 
-Extras.sync({ alter: true })
-    .then(() => {
-        console.log('=======> Cerated done `table Extras` ');
-    })
-    .catch((error) => {
-        console.error('Une erreur s\'est produite lors de la création de la table :', error);
-    });
+// Extras.sync({ alter: true })
+//     .then(() => {
+//         console.log('=======> Cerated done `table Extras` ');
+//     })
+//     .catch((error) => {
+//         console.error('Une erreur s\'est produite lors de la création de la table :', error);
+//     });
