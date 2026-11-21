@@ -44,10 +44,14 @@ const corsOptions = {
         "http://localhost:4003",    // Frontend Admin
         "http://localhost:4005",    // Mobile POS PWA
         "http://localhost:8084",    // Expo Metro Web
+        "http://localhost:8088",    // Expo Metro Web (alt port)
+        "http://localhost:8089",    // Expo Metro Web (alt port)
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4003",
         "http://127.0.0.1:4005",
         "http://127.0.0.1:8084",
+        "http://127.0.0.1:8088",
+        "http://127.0.0.1:8089",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],

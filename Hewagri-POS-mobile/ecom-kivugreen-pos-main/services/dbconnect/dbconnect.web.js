@@ -38,31 +38,38 @@ class WebDatabase {
       };
     }
 
+    // Track promises from executeSql calls to wait for all of them
+    const executeSqlPromises = [];
+
     const tx = {
-      executeSql: async (sql, params = [], successCb, errorCb) => {
-        try {
-          const result = await this.executeWebSQL(sql, params);
-          if (successCb) successCb(null, result);
-        } catch (error) {
-          console.error('[WebDB] executeSql error:', error);
-          if (errorCb) errorCb(error);
-        }
+      executeSql: (sql, params = [], successCb, errorCb) => {
+        const promise = this.executeWebSQL(sql, params)
+          .then(result => {
+            if (successCb) successCb(null, result);
+            return result;
+          })
+          .catch(error => {
+            console.error('[WebDB] executeSql error:', error);
+            if (errorCb) errorCb(error);
+            throw error;
+          });
+        executeSqlPromises.push(promise);
+        return promise;
       }
     };
 
     // Execute the transaction callback with the transaction object
     try {
       const result = callback(tx);
-      // If callback returns a promise, await it
-      if (result && typeof result.then === 'function') {
-        result.then(
-          (res) => { if (successCb) successCb(res); },
-          (err) => { if (errorCb) errorCb(err); }
-        );
-      } else {
-        // Synchronous completion
-        if (successCb) successCb(result);
-      }
+      // Wait for all executeSql promises to complete
+      Promise.all(executeSqlPromises)
+        .then(() => {
+          if (successCb) successCb(result);
+        })
+        .catch(err => {
+          console.error('[WebDB] Transaction error:', err);
+          if (errorCb) errorCb(err);
+        });
     } catch (error) {
       console.error('[WebDB] Transaction callback error:', error);
       if (errorCb) errorCb(error);
