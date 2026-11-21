@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HewAgri POS - Seed Test Users</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: #f8f9fa; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    button { background: #2e7d32; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; margin: 0.5rem 0; }
+    button:hover { background: #1b5e20; }
+    button:disabled { background: #9e9e9e; cursor: not-allowed; }
+    .btn-danger { background: #c62828; }
+    .btn-danger:hover { background: #b71c1c; }
+    pre { background: #263238; color: #aed581; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    .user-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+    .user-card { background: white; padding: 1rem; border-radius: 4px; border-left: 4px solid #2e7d32; }
+    .user-card.livreur { border-left-color: #1565c0; }
+    .status { padding: 0.5rem; border-radius: 4px; margin: 1rem 0; }
+    .status.success { background: #e8f5e9; color: #2e7d32; }
+    .status.error { background: #ffebee; color: #c62828; }
+    .status.info { background: #e3f2fd; color: #1565c0; }
+    h1 { color: #2e7d32; }
+    h2 { color: #37474f; border-bottom: 2px solid #2e7d32; padding-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>🌱 HewAgri POS - Seed Test Users</h1>
+  <p>Cette page permet de créer des utilisateurs de test dans IndexedDB pour tester l'application POS.</p>
+
+  <div class="card">
+    <h2>Actions</h2>
+    <button id="btn-seed" onclick="runSeed()">✨ Créer les utilisateurs de test</button>
+    <button id="btn-clear" class="btn-danger" onclick="runClear()">🗑️ Nettoyer les données de test</button>
+    <button id="btn-check" onclick="checkData()">🔍 Vérifier les données existantes</button>
+  </div>
+
+  <div class="card">
+    <h2>Statut</h2>
+    <div id="status" class="status info">Prêt. Cliquez sur "Créer les utilisateurs de test" pour commencer.</div>
+  </div>
+
+  <div class="card">
+    <h2>Utilisateurs de test disponibles</h2>
+    <div class="user-list" id="user-list"></div>
+  </div>
+
+  <div class="card">
+    <h2>Logs</h2>
+    <pre id="logs">En attente d'action...</pre>
+  </div>
+
+  <script type="module">
+    import localforage from 'https://cdn.jsdelivr.net/npm/localforage@1.10.0/+esm';
+
+    const statusEl = document.getElementById('status');
+    const logsEl = document.getElementById('logs');
+    const userListEl = document.getElementById('user-list');
+    const btnSeed = document.getElementById('btn-seed');
+    const btnClear = document.getElementById('btn-clear');
+    const btnCheck = document.getElementById('btn-check');
+
+    const SEED_USERS = [
+      {
+        realid: 1,
+        nom: "Mukwege",
+        postnom: "Kivu",
+        prenom: "Jean",
+        phone: "+243970000001",
+        email: "admin@kivugreen.cd",
+        token: "test-token-coop-admin-1",
+        uuid: "uuid-coop-admin-1",
+        roles: [{ id: 1, name: "COOP_ADMIN" }, { id: 2, name: "MANAGER" }],
+        idcooperative: 1,
+        typeaccount: 2,
+        sexe: "M",
+        avatar: "",
+        lastlogin: new Date().toISOString(),
+        chaine: JSON.stringify({ test: true }),
+        crearedon: new Date().toLocaleString()
+      },
+      {
+        realid: 2,
+        nom: "Livreur",
+        postnom: "Test",
+        prenom: "Pierre",
+        phone: "+243970000002",
+        email: "livreur@kivugreen.cd",
+        token: "test-token-livreur-1",
+        uuid: "uuid-livreur-1",
+        roles: [{ id: 3, name: "LIVREUR" }],
+        idcooperative: 1,
+        typeaccount: 1,
+        sexe: "M",
+        avatar: "",
+        lastlogin: new Date().toISOString(),
+        chaine: JSON.stringify({ test: true }),
+        crearedon: new Date().toLocaleString()
+      },
+      {
+        realid: 3,
+        nom: "Goma",
+        postnom: "Nord",
+        prenom: "Marie",
+        phone: "+243970000003",
+        email: "admin2@kivugreen.cd",
+        token: "test-token-coop-admin-2",
+        uuid: "uuid-coop-admin-2",
+        roles: [{ id: 1, name: "COOP_ADMIN" }],
+        idcooperative: 2,
+        typeaccount: 2,
+        sexe: "F",
+        avatar: "",
+        lastlogin: new Date().toISOString(),
+        chaine: JSON.stringify({ test: true }),
+        crearedon: new Date().toLocaleString()
+      }
+    ];
+
+    function log(msg) {
+      const timestamp = new Date().toLocaleTimeString();
+      logsEl.textContent += `\n[${timestamp}] ${msg}`;
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+
+    function setStatus(msg, type = 'info') {
+      statusEl.textContent = msg;
+      statusEl.className = `status ${type}`;
+    }
+
+    function renderUserList(users) {
+      userListEl.innerHTML = users.map(u => `
+        <div class="user-card ${u.typeaccount === 1 ? 'livreur' : ''}">
+          <strong>${u.prenom} ${u.nom}</strong><br>
+          📱 ${u.phone}<br>
+          📧 ${u.email}<br>
+          🏢 Coop: ${u.idcooperative}<br>
+          <span style="background: ${u.typeaccount === 2 ? '#2e7d32' : '#1565c0'}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem;">
+            ${u.typeaccount === 2 ? 'Admin Coopérative' : 'Livreur'}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    async function initDB() {
+      try {
+        localforage.config({
+          driver: localforage.INDEXEDDB,
+          name: 'HewAgriPOS',
+          version: 1.0,
+          storeName: 'pos_database',
+          description: 'HewAgri POS Offline Storage'
+        });
+        await localforage.ready();
+        log('IndexedDB initialisé');
+        return true;
+      } catch (e) {
+        log('Erreur init IndexedDB: ' + e.message);
+        setStatus('Erreur IndexedDB: ' + e.message, 'error');
+        return false;
+      }
+    }
+
+    async function runSeed() {
+      btnSeed.disabled = true;
+      btnClear.disabled = true;
+      btnCheck.disabled = true;
+      setStatus('Initialisation...', 'info');
+
+      if (!await initDB()) {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+        return;
+      }
+
+      try {
+        setStatus('Nettoyage données existantes...', 'info');
+        await clearTestData();
+        log('Données existantes nettoyées');
+
+        setStatus('Création utilisateurs...', 'info');
+        for (const user of SEED_USERS) {
+          const userKey = `__tbl_ecom_users__${user.token}`;
+          await localforage.setItem(userKey, user);
+
+          const idsKey = '__tbl_ecom_users___ids';
+          const ids = (await localforage.getItem(idsKey)) || [];
+          if (!ids.includes(user.token)) {
+            ids.push(user.token);
+            await localforage.setItem(idsKey, ids);
+          }
+
+          log(`Utilisateur créé: ${user.prenom} ${user.nom} (${user.phone})`);
+        }
+
+        setStatus('✅ Seed terminé avec succès !', 'success');
+        log('Seed completed successfully!');
+        renderUserList(SEED_USERS);
+
+      } catch (e) {
+        log('Erreur: ' + e.message);
+        setStatus('Erreur: ' + e.message, 'error');
+      } finally {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+      }
+    }
+
+    async function runClear() {
+      btnSeed.disabled = true;
+      btnClear.disabled = true;
+      btnCheck.disabled = true;
+      setStatus('Nettoyage...', 'info');
+
+      if (!await initDB()) {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+        return;
+      }
+
+      try {
+        await clearTestData();
+        log('Toutes les données de test supprimées');
+        setStatus('✅ Données nettoyées', 'success');
+        userListEl.innerHTML = '';
+      } catch (e) {
+        log('Erreur: ' + e.message);
+        setStatus('Erreur: ' + e.message, 'error');
+      } finally {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+      }
+    }
+
+    async function checkData() {
+      btnSeed.disabled = true;
+      btnClear.disabled = true;
+      btnCheck.disabled = true;
+      setStatus('Vérification...', 'info');
+
+      if (!await initDB()) {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+        return;
+      }
+
+      try {
+        const ids = (await localforage.getItem('__tbl_ecom_users___ids')) || [];
+        log(`Trouvé ${ids.length} utilisateur(s) en base`);
+
+        const users = [];
+        for (const id of ids) {
+          const user = await localforage.getItem(`__tbl_ecom_users__${id}`);
+          if (user) users.push(user);
+        }
+
+        if (users.length > 0) {
+          renderUserList(users);
+          setStatus(`Trouvé ${users.length} utilisateur(s)`, 'success');
+        } else {
+          userListEl.innerHTML = '<p>Aucun utilisateur trouvé</p>';
+          setStatus('Aucun utilisateur en base', 'info');
+        }
+      } catch (e) {
+        log('Erreur: ' + e.message);
+        setStatus('Erreur: ' + e.message, 'error');
+      } finally {
+        btnSeed.disabled = false;
+        btnClear.disabled = false;
+        btnCheck.disabled = false;
+      }
+    }
+
+    async function clearTestData() {
+      const tables = ['__tbl_ecom_users__', '__tbl_ecom_cooperatives__'];
+      for (const table of tables) {
+        const idsKey = `${table}_ids`;
+        const ids = (await localforage.getItem(idsKey)) || [];
+        for (const id of ids) {
+          await localforage.removeItem(`${table}_${id}`);
+        }
+        await localforage.setItem(idsKey, []);
+      }
+    }
+
+    // Auto-check on load
+    checkData();
+  </script>
+</body>
+</html>
