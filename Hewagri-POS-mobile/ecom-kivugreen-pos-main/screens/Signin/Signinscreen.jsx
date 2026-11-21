@@ -8,7 +8,7 @@ import { AntDesign, Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { btn, inputGroup } from '../../assets/styles/Styles';
 import { Divider } from 'react-native-elements';
 import Toast from 'react-native-toast-message';
-import { onRunExternalRQST, onRunInsertQRY } from '../../services/communications';
+import { onRunExternalRQST, onRunInsertQRY, onRunRemoveQRY } from '../../services/communications';
 import DialogBox from 'react-native-dialogbox';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Loader } from '../../components/Loader/comp.loader';
@@ -71,7 +71,9 @@ export const SigninScreen = ({ navigation, route }) => {
                                     // return false;
                                     if (!isNaN(id_cooperative)) {
                                         // typeaccount : 1: Livreur 2: Admin cooperative
-                                        onRunInsertQRY({
+                                        // Clear existing users first to avoid seed data conflicts
+                                        onRunRemoveQRY({ table: tbl_users, clause: '' }, () => {
+                                            onRunInsertQRY({
                                             table: tbl_users,
                                             columns: `'realid', 'nom', 'postnom', 'prenom', 'token', 'phone', 'email', 'lastlogin', 'uuid', 'avatar', 'idcooperative', 'chaine', 'crearedon', 'sexe', 'roles', 'typeaccount'`,
                                             dot: "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?",
@@ -119,9 +121,12 @@ export const SigninScreen = ({ navigation, route }) => {
                                                 });
                                             }
                                         })
+                                    })
                                     } else {
                                         if (roles.includes(3)) {
-                                            onRunInsertQRY({
+                                            // Clear existing users first to avoid seed data conflicts
+                                            onRunRemoveQRY({ table: tbl_users, clause: '' }, () => {
+                                                onRunInsertQRY({
                                                 table: tbl_users,
                                                 columns: `'realid', 'nom', 'postnom', 'prenom', 'token', 'phone', 'email', 'lastlogin', 'uuid', 'avatar', 'idcooperative', 'chaine', 'crearedon', 'sexe', 'roles', 'typeaccount'`,
                                                 dot: "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?",
@@ -170,6 +175,7 @@ export const SigninScreen = ({ navigation, route }) => {
                                                     });
                                                 }
                                             })
+                                        })
                                         } else {
                                             setoutput(`Désolé ${nom} ${postnom} votre compte n'est associé à aucune coopérative; et ne possède pas les privilège du compte livreur de ${appnamecompangyname}!`)
                                             Snackbar.show({

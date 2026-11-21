@@ -39,9 +39,10 @@ export const onRunInsertQRY = async ({ columns, dot, table, values, options }, c
                         console.error('[communications] Insert error:', err);
                     }
                 );
-                // Select the specific record by realid if available, otherwise get the latest
+                // Select the specific record by id (which equals realid for real users)
+                // Seed users have uuid as id, real users have realid as id
                 const selectSql = realid
-                    ? `select * from ${table} where realid = '${realid}'`
+                    ? `select * from ${table} where id = '${realid}'`
                     : `select * from ${table} order by crearedon desc limit 1`;
                 tx.executeSql(selectSql, [], (_, { rows }) => {
                     console.log('[communications] Select after insert, rows:', rows);
