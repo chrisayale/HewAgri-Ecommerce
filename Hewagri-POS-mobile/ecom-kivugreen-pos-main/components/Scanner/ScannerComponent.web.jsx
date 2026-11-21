@@ -31,28 +31,41 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
   const streamRef = useRef(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const requestPermissions = async () => {
       if (Platform.OS === 'web') {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: type === 'back' ? 'environment' : 'user' }
           });
+          if (!mounted) {
+            stream.getTracks().forEach(track => track.stop());
+            return;
+          }
           streamRef.current = stream;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            await videoRef.current.play();
+            try {
+              await videoRef.current.play();
+            } catch (playError) {
+              // Ignore AbortError caused by new load request or unmount
+              if (playError.name !== 'AbortError') {
+                throw playError;
+              }
+            }
           }
-          setHasPermission(true);
+          if (mounted) setHasPermission(true);
         } catch (error) {
           console.error('Camera access denied:', error);
-          setHasPermission(false);
+          if (mounted) setHasPermission(false);
         }
       } else {
         try {
           const { status } = await Camera.requestCameraPermissionsAsync();
-          setHasPermission(status === 'granted');
+          if (mounted) setHasPermission(status === 'granted');
         } catch (error) {
-          setHasPermission(false);
+          if (mounted) setHasPermission(false);
         }
       }
     };
@@ -60,6 +73,7 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
     requestPermissions();
 
     return () => {
+      mounted = false;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
@@ -95,8 +109,15 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play();
+          videoRef.current.play().catch(playError => {
+            // Ignore AbortError caused by rapid toggle or unmount
+            if (playError.name !== 'AbortError') {
+              console.error('Camera play error:', playError);
+            }
+          });
         }
+      }).catch(err => {
+        console.error('Camera switch error:', err);
       });
     }
   };
@@ -173,7 +194,7 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
             style={[styles.controlButton, styles.manualTrigger]}
             onPress={() => setShowManualInput(true)}
           >
-            <Ionicons name='keyboard-outline' size={Dims.iconsize} color={Colors.primaryColor} />
+            <Ionicons name='keypad-outline' size={Dims.iconsize} color={Colors.primaryColor} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.controlButton}
@@ -308,11 +329,11 @@ const _rawStyles = {
   },
   nativeContainer: {
     flex: 1,
+    width: '100%',
   },
   camera: {
     flex: 1,
-    width: Dims.width,
-    height: Dims.height,
+    width: '100%',
   },
   controlsContainer: {
     position: 'absolute',

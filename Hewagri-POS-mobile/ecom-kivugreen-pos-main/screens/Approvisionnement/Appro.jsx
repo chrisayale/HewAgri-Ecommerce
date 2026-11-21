@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Title } from '../../components/Title/Title';
-import { TouchableHighlight, View, TextInput, Text, ScrollView, StyleSheet } from 'react-native';
+import { TouchableHighlight, View, TextInput, Text, ScrollView, StyleSheet, Platform } from 'react-native';
 import { Colors } from '../../assets/colors/Colors';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import Snackbar from 'react-native-snackbar';
@@ -52,15 +52,17 @@ export const ApprovisionnemtScreen = ({ route, navigation }) => {
 
     React.useEffect(() => {
         onLoadProducts()
-        PosPrinter.init(false)
-            .then((res) => {
-                // getDevices()
-                // console.log('====================================');
-                // console.log(PosPrinter.isDebug(true));
-                // console.log('====================================');
-                // ()
-            })
-            .catch((err) => console.log(err));
+        if (Platform.OS !== 'web') {
+          PosPrinter.init(false)
+              .then((res) => {
+                  // getDevices()
+                  // console.log('====================================');
+                  // console.log(PosPrinter.isDebug(true));
+                  // console.log('====================================');
+                  // ()
+              })
+              .catch((err) => console.log(err));
+        }
     }, []);
 
     return (
