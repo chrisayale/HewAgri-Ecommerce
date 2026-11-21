@@ -31,9 +31,18 @@ export const Users = connect.define<User>('__tbl_ecom_users', {
     },
     date_naiss: DataTypes.STRING,
     sexe: DataTypes.STRING,
-    idprovince: DataTypes.STRING,
-    idterritoire: DataTypes.STRING,
-    idvillage: DataTypes.STRING,
+    idprovince: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    idterritoire: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
+    idvillage: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
     hectare_cultive: {
         type: DataTypes.STRING,
         defaultValue: 0
