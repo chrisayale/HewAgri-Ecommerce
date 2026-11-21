@@ -35,15 +35,18 @@ export const onRunInsertQRY = async ({ columns, dot, table, values, options }, c
             (tx) => {
                 tx.executeSql(`insert into ${table} (${columns}) values (${dot})`, values);
                 tx.executeSql(`select * from ${table}`, [], (_, { rows }) => {
-                    cb(undefined, rows['_array'][0])
+                    const result = rows['_array'][0];
+                    cb(undefined, result);
                 });
             },
             (err) => {
-                cb(err, undefined)
+                console.error('[communications] Insert transaction error:', err);
+                cb(err, undefined);
             }
         );
     } catch (error) {
-        return cb(error, undefined)
+        console.error('[communications] onRunInsertQRY caught error:', error);
+        return cb(error, undefined);
     }
 };
 
@@ -53,13 +56,15 @@ export const onRunRawQRY = async ({ table, sql, options }, cb) => {
             (tx) => {
                 tx.executeSql(`${sql}`, null,
                     (d => {
-                        cb(undefined, d)
+                        cb(undefined, d);
                     }), e => {
-                        cb(e, undefined)
+                        console.error('[communications] Raw query error:', e);
+                        cb(e, undefined);
                     })
-            });
+            );
     } catch (error) {
-        return cb(error, undefined)
+        console.error('[communications] onRunRawQRY caught error:', error);
+        return cb(error, undefined);
     }
 };
 
@@ -68,15 +73,20 @@ export const onRunRemoveQRY = async ({ table, clause }, cb) => {
         // DELETE FROM `__tbl_users` WHERE `__tbl_users`.`id` = 1 » ?
         db.transaction(
             (tx) => {
-                tx.executeSql(`delete from ${table} where id <> 0`, null,
+                const sql = `delete from ${table} where id <> 0`;
+                tx.executeSql(sql, null,
                     (line) => {
-                        cb(undefined, 'done')
+                        cb(undefined, 'done');
                     },
-                    (err) => cb(err, undefined)
-                )
+                    (err) => {
+                        console.error('[communications] Delete error:', err);
+                        cb(err, undefined);
+                    }
+                );
             });
     } catch (error) {
-        return cb(error, undefined)
+        console.error('[communications] onRunRemoveQRY caught error:', error);
+        return cb(error, undefined);
     }
 };
 
@@ -86,22 +96,26 @@ export const onRunRetrieveQRY = async ({ table, limit }, cb) => {
         db.transaction(
             (tx) => {
                 tx.executeSql(`select * from ${table} limit ${limit}`, [], (_, { rows }) => {
-                    cb(undefined, rows['_array'] && rows['_array']['length'] ? rows['_array'] : [])
+                    const result = rows['_array'] && rows['_array']['length'] ? rows['_array'] : [];
+                    cb(undefined, result);
                 }, (err) => {
-                    cb(err, undefined)
+                    console.error('[communications] Query error:', err);
+                    cb(err, undefined);
                 });
-            }
-            , (err) => {
-                cb(err, undefined)
+            },
+            (err) => {
+                console.error('[communications] Transaction error:', err);
+                cb(err, undefined);
             }
         );
     } catch (error) {
-        cb(error, undefined)
+        console.error('[communications] onRunRetrieveQRY caught error:', error);
+        cb(error, undefined);
     }
 };
 
 export const onRunExternalRQST = async ({ url, data, method, params }, cb) => {
-    const _url = endpoint.concat('/api').concat(url)
+    const _url = endpoint.concat('/api').concat(url);
     try {
         await axios({
             timeout,
@@ -111,13 +125,15 @@ export const onRunExternalRQST = async ({ url, data, method, params }, cb) => {
             url: _url,
         })
             .then(res => {
-                return cb(undefined, { ...res['data'] })
+                return cb(undefined, { ...res['data'] });
             })
             .catch(err => {
-                return cb(err, undefined)
-            })
+                console.error('[communications] External request error:', err?.message || err);
+                return cb(err, undefined);
+            });
     } catch (error) {
-        return cb(error, undefined)
+        console.error('[communications] onRunExternalRQST caught error:', error);
+        return cb(error, undefined);
     }
 };
 
@@ -130,18 +146,18 @@ export const onDeconnextion = async (cb) => {
                 tx.executeSql(`delete from ${tbl_users} where id <> 0`, null);
             },
             err => {
-                cb(err, undefined)
+                console.error('[communications] Deconnexion transaction error:', err);
+                cb(err, undefined);
             },
-            done => cb(undefined, "done"),
+            done => {
+                cb(undefined, "done");
+            },
             err => {
-                console.log("Error on deconnexion => ", err);
+                console.error("[communications] Error on deconnexion => ", err);
             }
         );
     } catch (error) {
-        // console.log(" Error ", error);
-        cb(error, undefined)
+        console.error("[communications] onDeconnextion caught error:", error);
+        cb(error, undefined);
     }
 };
-
-
-

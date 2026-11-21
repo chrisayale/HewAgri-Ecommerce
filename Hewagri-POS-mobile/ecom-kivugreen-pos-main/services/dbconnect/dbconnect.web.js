@@ -20,32 +20,53 @@ class WebDatabase {
   async initialize() {
     if (Platform.OS !== 'web') return;
     try {
-      await localforage.ready();
+      await Promise.race([
+        localforage.ready(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('localforage.ready() timeout')), 10000))
+      ]);
       this.ready = true;
-      console.log('[WebDB] IndexedDB initialized successfully');
     } catch (error) {
       console.error('[WebDB] Failed to initialize IndexedDB:', error);
-      this.ready = true;
+      this.ready = true; // Still mark as ready to avoid hanging
     }
   }
 
-  transaction(callback) {
+  transaction(callback, errorCb, successCb) {
     if (Platform.OS !== 'web') {
       return {
         executeSql: (sql, params, successCb, errorCb) => {}
       };
     }
 
-    return {
+    const tx = {
       executeSql: async (sql, params = [], successCb, errorCb) => {
         try {
           const result = await this.executeWebSQL(sql, params);
           if (successCb) successCb(null, result);
         } catch (error) {
+          console.error('[WebDB] executeSql error:', error);
           if (errorCb) errorCb(error);
         }
       }
     };
+
+    // Execute the transaction callback with the transaction object
+    try {
+      const result = callback(tx);
+      // If callback returns a promise, await it
+      if (result && typeof result.then === 'function') {
+        result.then(
+          (res) => { if (successCb) successCb(res); },
+          (err) => { if (errorCb) errorCb(err); }
+        );
+      } else {
+        // Synchronous completion
+        if (successCb) successCb(result);
+      }
+    } catch (error) {
+      console.error('[WebDB] Transaction callback error:', error);
+      if (errorCb) errorCb(error);
+    }
   }
 
   async executeWebSQL(sql, params = []) {
@@ -53,12 +74,24 @@ class WebDatabase {
     const lowerSql = sql.toLowerCase().trim();
 
     if (lowerSql.startsWith('create table')) {
+      // Extract table name and initialize _ids array for it
+      // Match table name including underscores and special chars (e.g., __tbl_ecom_users__)
+      const tableMatch = sql.match(/create table\s+(?:if not exists\s+)?([`"']?)([\w_$]+)\1/i);
+      if (tableMatch) {
+        const table = tableMatch[2];
+        const idsKey = table + '_ids';
+        const existingIds = await localforage.getItem(idsKey);
+        if (!existingIds) {
+          await localforage.setItem(idsKey, []);
+        }
+      }
       return { rowsAffected: 0, insertId: 0 };
     }
 
     if (lowerSql.startsWith('insert into')) {
-      const tableMatch = sql.match(/insert into\s+(\w+)/i);
-      const table = tableMatch ? tableMatch[1] : 'unknown';
+      // Match table name including underscores and special chars
+      const tableMatch = sql.match(/insert into\s+([`"']?)([\w_$]+)\1/i);
+      const table = tableMatch ? tableMatch[2] : 'unknown';
 
       const columnsMatch = sql.match(/\(([^)]+)\)/);
       const valuesMatch = sql.match(/values\s*\(([^)]+)\)/i);
@@ -90,13 +123,15 @@ class WebDatabase {
     }
 
     if (lowerSql.startsWith('select * from')) {
-      const tableMatch = sql.match(/from\s+(\w+)/i);
-      const table = tableMatch ? tableMatch[1] : 'unknown';
+      // Match table name including underscores and special chars
+      const tableMatch = sql.match(/from\s+([`"']?)([\w_$]+)\1/i);
+      const table = tableMatch ? tableMatch[2] : 'unknown';
 
       const limitMatch = sql.match(/limit\s+(\d+)/i);
       const limit = limitMatch ? parseInt(limitMatch[1]) : 1000;
 
-      const ids = (await localforage.getItem(table + '_ids')) || [];
+      const idsKey = table + '_ids';
+      const ids = (await localforage.getItem(idsKey)) || [];
       const rows = [];
 
       for (const id of ids.slice(0, limit)) {
@@ -107,9 +142,9 @@ class WebDatabase {
       return { rows: { _array: rows, length: rows.length } };
     }
 
-    if (lowerSql.includes('where')) {
-      const tableMatch = sql.match(/from\s+(\w+)/i);
-      const table = tableMatch ? tableMatch[1] : 'unknown';
+    if (lowerSql.includes('where') && !lowerSql.startsWith('update') && !lowerSql.startsWith('delete from')) {
+      const tableMatch = sql.match(/from\s+([`"']?)([\w_$]+)\1/i);
+      const table = tableMatch ? tableMatch[2] : 'unknown';
 
       const whereMatch = sql.match(/where\s+(.+)$/i);
       if (whereMatch) {
@@ -129,8 +164,8 @@ class WebDatabase {
     }
 
     if (lowerSql.startsWith('update')) {
-      const tableMatch = sql.match(/update\s+(\w+)/i);
-      const table = tableMatch ? tableMatch[1] : 'unknown';
+      const tableMatch = sql.match(/update\s+([`"']?)([\w_$]+)\1/i);
+      const table = tableMatch ? tableMatch[2] : 'unknown';
 
       const setMatch = sql.match(/set\s+(.+?)\s+where/i);
       const whereMatch = sql.match(/where\s+(.+)$/i);
@@ -159,8 +194,8 @@ class WebDatabase {
     }
 
     if (lowerSql.startsWith('delete from')) {
-      const tableMatch = sql.match(/from\s+(\w+)/i);
-      const table = tableMatch ? tableMatch[1] : 'unknown';
+      const tableMatch = sql.match(/delete from\s+([`"']?)([\w_$]+)\1/i);
+      const table = tableMatch ? tableMatch[2] : 'unknown';
 
       const whereMatch = sql.match(/where\s+(.+)$/i);
       if (whereMatch) {
