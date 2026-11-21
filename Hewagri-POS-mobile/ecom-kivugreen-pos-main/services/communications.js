@@ -61,7 +61,8 @@ export const onRunRawQRY = async ({ table, sql, options }, cb) => {
                         console.error('[communications] Raw query error:', e);
                         cb(e, undefined);
                     })
-            );
+            }
+        );
     } catch (error) {
         console.error('[communications] onRunRawQRY caught error:', error);
         return cb(error, undefined);
