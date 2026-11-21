@@ -97,31 +97,22 @@ export const HomeScreen = ({ navigation }) => {
                                 <Text style={{ color: Consts.whiteColor, fontFamily: "mons-e", fontSize: 11 }}> {inf && inf['email']}</Text>
                             </View>
                         </View>
-                        <View style={{ width: "40%", alignContent: "flex-end", alignItems: "flex-end", padding: 8, flexDirection: "row", justifyContent: "space-between" }}>
-                            <Tooltip
-                                popover={<Text>Stock disponible dans {cooperative}</Text>}
-                                withOverlay
-                                withPointer
-                                toggleOnPress={true}
-                                ref={tooltipRef}
-                            >
-                                <TouchableHighlight
-                                    underlayColor={Consts.primaryColor}
-                                    style={[btnHeader,]}
-                                    onPress={_ => {
-                                        // setshow(!show)
-                                        navigation.navigate(routes['storagestate'])
-                                    }}>
-                                    <MaterialCommunityIcons name="store-check" size={40} color={Colors.whiteColor} style={{ padding: 10 }} />
-                                </TouchableHighlight>
-                            </Tooltip>
+                        <View style={{ width: "40%", padding: 8, flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
                             <TouchableHighlight
                                 underlayColor={Consts.primaryColor}
-                                style={[btnHeader]}
+                                style={[btnHeader, { minWidth: 56, height: 56, justifyContent: "center", alignItems: "center" }]}
+                                onPress={_ => {
+                                    navigation.navigate(routes['storagestate'])
+                                }}>
+                                <MaterialCommunityIcons name="store-check" size={28} color={Colors.whiteColor} />
+                            </TouchableHighlight>
+                            <TouchableHighlight
+                                underlayColor={Consts.primaryColor}
+                                style={[btnHeader, { minWidth: 56, height: 56, justifyContent: "center", alignItems: "center" }]}
                                 onPress={_ => {
                                     __()
                                 }}>
-                                <Ionicons name="refresh-circle" size={40} color={Consts.whiteColor} style={{ padding: 10 }} />
+                                <Ionicons name="refresh-circle" size={28} color={Colors.whiteColor} />
                             </TouchableHighlight>
                         </View>
                     </View>
@@ -172,45 +163,44 @@ export const HomeScreen = ({ navigation }) => {
                         onRefresh={__}
                     />}
                 >
-                    <View style={{ marginTop: 10, width: "100%", alignSelf: "center", alignContent: "center", alignItems: "center", paddingHorizontal: 10 }}>
-                        <View style={{ flexDirection: "column", width: "100%" }}>
-                            <View style={{ flexDirection: "row", alignContent: "center", alignContent: "center", justifyContent: "space-between", alignItems: "center" }}>
-                                <View style={{ width: "50%", padding: 10 }} >
-                                    <TouchableHighlight
-                                        style={[btnHome]}
-                                        underlayColor={Colors.pillColor}
-                                        onPress={() => {
-                                            navigation.navigate(routes['bonentree'])
-                                        }}
-                                    >
-                                        <View style={{ flexDirection: "column", alignContent: "center", alignItems: "center", paddingTop: 10 }}>
-                                            <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
-                                                <MaterialCommunityIcons name="store-plus" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
-                                            </View>
-                                            <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Approvisionnement</Text>
+                    <View style={{ marginTop: 10, width: "100%" }}>
+                        {/* --------------------------------- */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
+                                <TouchableHighlight
+                                    style={[btnHome]}
+                                    underlayColor={Colors.pillColor}
+                                    onPress={() => {
+                                        navigation.navigate(routes['bonentree'])
+                                    }}
+                                >
+                                    <View style={{ flexDirection: "column", alignContent: "center", alignItems: "center", paddingTop: 10 }}>
+                                        <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
+                                            <MaterialCommunityIcons name="store-plus" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
                                         </View>
-                                    </TouchableHighlight>
-                                </View>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Approvisionnement</Text>
+                                    </View>
+                                </TouchableHighlight>
+                            </View>
 
-                                <View style={{ width: "50%", padding: 10 }} >
-                                    <TouchableHighlight
-                                        style={[btnHome]}
-                                        underlayColor={Colors.pillColor}
-                                        onPress={() => navigation.navigate(routes['credit'])}
-                                    >
-                                        <View style={{ flexDirection: "column", alignContent: "center", alignItems: "center", paddingTop: 10 }}>
-                                            <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
-                                                <Entypo name="credit" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
-                                            </View>
-                                            <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Démande de crédit</Text>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
+                                <TouchableHighlight
+                                    style={[btnHome]}
+                                    underlayColor={Colors.pillColor}
+                                    onPress={() => navigation.navigate(routes['credit'])}
+                                >
+                                    <View style={{ flexDirection: "column", alignContent: "center", alignItems: "center", paddingTop: 10 }}>
+                                        <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
+                                            <Entypo name="credit" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
                                         </View>
-                                    </TouchableHighlight>
-                                </View>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Démande de crédit</Text>
+                                    </View>
+                                </TouchableHighlight>
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", alignContent: "center", alignContent: "center", justifyContent: "space-between", alignItems: "center" }}>
-                            <View style={{ width: "50%", padding: 10 }} >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -227,7 +217,7 @@ export const HomeScreen = ({ navigation }) => {
                                 </TouchableHighlight>
                             </View>
 
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -243,8 +233,8 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", alignContent: "center", alignContent: "center", justifyContent: "space-between", alignItems: "center" }}>
-                            <View style={{ width: "50%", padding: 10 }} >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -261,7 +251,7 @@ export const HomeScreen = ({ navigation }) => {
                                 </TouchableHighlight>
                             </View>
 
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -275,11 +265,10 @@ export const HomeScreen = ({ navigation }) => {
                                     </View>
                                 </TouchableHighlight>
                             </View>
-
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", alignContent: "flex-start", alignContent: "flex-start", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
-                            <View style={{ width: "50%", padding: 10 }} >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -291,12 +280,12 @@ export const HomeScreen = ({ navigation }) => {
                                         <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
                                             <MaterialCommunityIcons name="store-check" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
                                         </View>
-                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Stock ecoulé</Text>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Stock écoulé</Text>
                                     </View>
                                 </TouchableHighlight>
                             </View>
 
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -312,8 +301,8 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", alignContent: "flex-start", alignContent: "flex-start", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
-                            <View style={{ width: "50%", padding: 10 }} >
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10 }}>
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -324,14 +313,13 @@ export const HomeScreen = ({ navigation }) => {
                                     <View style={{ flexDirection: "column", alignContent: "center", alignItems: "center", paddingTop: 10 }}>
                                         <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
                                             <Entypo name="credit" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
-                                            {/* <MaterialCommunityIcons name="store-check" size={Dims.iconsize * 1.5} color={Consts.primaryColor} /> */}
                                         </View>
-                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Liste démandes de crédits</Text>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Liste demandes de crédits</Text>
                                     </View>
                                 </TouchableHighlight>
                             </View>
 
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -349,9 +337,9 @@ export const HomeScreen = ({ navigation }) => {
                             </View>
                         </View>
                         {/* --------------------------------- */}
-                        <View style={{ flexDirection: "row", alignContent: "flex-start", alignContent: "flex-start", justifyContent: "flex-start", alignItems: "flex-start", width: "100%" }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, marginBottom: 20 }}>
 
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -361,11 +349,11 @@ export const HomeScreen = ({ navigation }) => {
                                         <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
                                             <MaterialCommunityIcons name="store-check" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
                                         </View>
-                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>Etat de stock</Text>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>État de stock</Text>
                                     </View>
                                 </TouchableHighlight>
                             </View>
-                            <View style={{ width: "50%", padding: 10 }} >
+                            <View style={{ width: "50%", paddingHorizontal: 5 }} >
                                 <TouchableHighlight
                                     style={[btnHome]}
                                     underlayColor={Colors.pillColor}
@@ -375,7 +363,7 @@ export const HomeScreen = ({ navigation }) => {
                                         <View style={{ borderColor: Consts.primaryColor, borderWidth: 0, borderRadius: 12, padding: 12, marginBottom: 5 }}>
                                             <MaterialCommunityIcons name="information" size={Dims.iconsize * 1.5} color={Consts.primaryColor} />
                                         </View>
-                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>A propos</Text>
+                                        <Text style={{ textAlign: "center", fontFamily: "mons-b", fontSize: 12, color: Consts.primaryColor }}>À propos</Text>
                                     </View>
                                 </TouchableHighlight>
                             </View>
