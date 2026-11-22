@@ -136,6 +136,14 @@ export const AddmemberScreen = ({ route, navigation }) => {
     { id: 'divorce', label: 'Divorcé(e) / Séparé(e)' },
   ];
 
+  // Farming type options
+  const FARMING_TYPES = [
+    { id: 'pluviale', label: 'Agriculture pluviale' },
+    { id: 'irrigation', label: 'Irrigation' },
+    { id: 'climat', label: "Adaptée au climat" },
+    { id: 'moderne', label: 'Moderne (sous serre, intelligente, etc.)' },
+  ];
+
   const memberSchemas = Yup.object().shape({
     nom: Yup.string().required('Entre le nom ici'),
     postnom: Yup.string().required('Entre le postnom ici'),
@@ -178,6 +186,7 @@ export const AddmemberScreen = ({ route, navigation }) => {
       }
       return value;
     }),
+    typeAgriculture: Yup.array().of(Yup.string()),
   });
 
   const __handleSubmit = async (values, { resetForm }) => {
@@ -462,6 +471,7 @@ export const AddmemberScreen = ({ route, navigation }) => {
               culturesPhares: [],
               etatCivil: '',
               nombreEnfants: '',
+              typeAgriculture: [],
             }}
             validationSchema={memberSchemas}
             onSubmit={__handleSubmit}
@@ -716,6 +726,47 @@ export const AddmemberScreen = ({ route, navigation }) => {
                               </View>
                             )}
                             {errors.culturesPhares && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.culturesPhares}</Text>}
+                          </View>
+                        </View>
+
+                        {/* Section: Type d'agriculture appliquée */}
+                        <View style={section}>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Type d'agriculture appliquée</Text>
+                          <View style={[fieldGroup, { marginTop: Spacing.md }]}>
+                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Type(s) d'agriculture</Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.xs }}>
+                              {FARMING_TYPES.map((type, index) => (
+                                <TouchableOpacity
+                                  key={type.id}
+                                  onPress={() => {
+                                    const currentTypes = values.typeAgriculture || [];
+                                    const isSelected = currentTypes.includes(type.id);
+                                    const newTypes = isSelected
+                                      ? currentTypes.filter(t => t !== type.id)
+                                      : [...currentTypes, type.id];
+                                    handleChange('typeAgriculture')(newTypes);
+                                  }}
+                                  style={{
+                                    paddingHorizontal: Spacing.md,
+                                    paddingVertical: Spacing.sm,
+                                    borderRadius: BorderRadius.full,
+                                    backgroundColor: (values.typeAgriculture || []).includes(type.id) ? Colors.primary[500] : Colors.surface.primary,
+                                    borderWidth: 1,
+                                    borderColor: (values.typeAgriculture || []).includes(type.id) ? Colors.primary[500] : Colors.border.main,
+                                    ...Shadows.shadow.xs,
+                                  }}
+                                >
+                                  <Text style={{
+                                    fontFamily: Typography.fontFamily.medium,
+                                    fontSize: inputFontSize,
+                                    color: (values.typeAgriculture || []).includes(type.id) ? Colors.whiteColor : Colors.text.primary,
+                                  }}>
+                                    {type.label}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                            {errors.typeAgriculture && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.typeAgriculture}</Text>}
                           </View>
                         </View>
 
