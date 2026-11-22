@@ -12,6 +12,27 @@ import { Dims } from '../../assets/dimensions/Dimemensions';
 import Netinfo from '@react-native-community/netinfo';
 import { routes } from '../../assets/helper/helper.routes';
 
+// Global unhandled rejection guard for fontfaceobserver timeout errors on Web
+if (typeof window !== 'undefined' && !window.__fontfaceobserverGuardInstalled) {
+  window.__fontfaceobserverGuardInstalled = true;
+  const originalOnUnhandledRejection = window.onunhandledrejection;
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event?.reason;
+    const isFontTimeout = reason?.message?.includes?.('fontfaceobserver') ||
+                          reason?.message?.includes?.('timeout') ||
+                          reason?.message?.includes?.('Font.loadAsync');
+    if (isFontTimeout) {
+      // Prevent unhandled rejection error from bubbling to console
+      event.preventDefault();
+      console.warn('[Font Load] Font loading timeout caught and suppressed:', reason?.message);
+      return;
+    }
+    if (originalOnUnhandledRejection) {
+      originalOnUnhandledRejection(event);
+    }
+  });
+}
+
 export const LoadingSceen = ({ navigation }) => {
 
   const [isloading, setisloading] = React.useState(true); // Start with true to show loader immediately
@@ -190,18 +211,28 @@ export const LoadingSceen = ({ navigation }) => {
   const initializeApp = async () => {
     console.log('[LoadingScreen] Starting app initialization...');
     try {
-      // Load fonts with timeout
+      // Load fonts with timeout and graceful error handling
       console.log('[LoadingScreen] Loading fonts...');
-      await Promise.race([
-        Fonts.loadAsync({
-          "mons-e": require("../../assets/fonts/Poppins-ExtraLight.ttf"),
-          "mons-a": require("../../assets/fonts/Poppins-Regular.ttf"),
-          "mons": require("../../assets/fonts/Poppins-SemiBold.ttf"),
-          "mons-b": require("../../assets/fonts/Poppins-Medium.ttf")
-        }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Font loading timeout')), 15000))
-      ]);
-      console.log('[LoadingScreen] Fonts loaded');
+      try {
+        await Promise.race([
+          Fonts.loadAsync({
+            "mons-e": require("../../assets/fonts/Poppins-ExtraLight.ttf"),
+            "mons-a": require("../../assets/fonts/Poppins-Regular.ttf"),
+            "mons": require("../../assets/fonts/Poppins-SemiBold.ttf"),
+            "mons-b": require("../../assets/fonts/Poppins-Medium.ttf")
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Font loading timeout')), 15000))
+        ]);
+        console.log('[LoadingScreen] Fonts loaded');
+      } catch (fontErr) {
+        // On Web, font loading timeout is non-fatal - system fonts will be used as fallback
+        if (Platform.OS === 'web') {
+          console.warn('[LoadingScreen] Font loading failed/timeout on Web, continuing with fallback fonts:', fontErr?.message);
+        } else {
+          // On native, re-throw as it's more critical
+          throw fontErr;
+        }
+      }
 
       // On web, ensure IndexedDB is ready
       if (Platform.OS === 'web') {

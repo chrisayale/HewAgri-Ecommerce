@@ -105,17 +105,21 @@ export const HomeScreen = ({ navigation }) => {
               >
                 <View style={{ flexDirection: "row", alignContent: "center", alignItems: "center" }}>
                   <Text style={{ fontSize: 18, color: Colors.whiteColor, fontFamily: "mons", textTransform: "capitalize" }}>
-                    {inf && inf['cooperative'] ? `${inf['cooperative']}` : "---"}
+                    {inf && inf['cooperative'] ? String(inf['cooperative']) : '---'}
                   </Text>
                 </View>
               </TouchableHighlight>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Ionicons name="call" color={Colors.whiteColor} style={{ paddingRight: 7 }} />
-                <Text style={{ color: Colors.whiteColor, fontFamily: "mons-e", fontSize: 11 }}> {inf && inf['phone']}</Text>
+                <Text style={{ color: Colors.whiteColor, fontFamily: "mons-e", fontSize: 11 }}>
+                  {inf && inf['phone'] ? String(inf['phone']) : ''}
+                </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <MaterialIcons name="email" color={Colors.whiteColor} style={{ paddingRight: 7 }} />
-                <Text style={{ color: Colors.whiteColor, fontFamily: "mons-e", fontSize: 11 }}> {inf && inf['email']}</Text>
+                <Text style={{ color: Colors.whiteColor, fontFamily: "mons-e", fontSize: 11 }}>
+                  {inf && inf['email'] ? String(inf['email']) : ''}
+                </Text>
               </View>
             </View>
             <View style={{ width: "40%", padding: 8, flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
@@ -146,7 +150,7 @@ export const HomeScreen = ({ navigation }) => {
                   <View style={{ marginTop: 10, alignContent: "center" }}>
                     <Text style={{ fontFamily: "mons-e", color: Colors.pillColor, textAlign: "center" }}>Nombre membres</Text>
                     <Text style={{ fontFamily: "mons", color: Colors.pillColor, textAlign: "center" }}>
-                      {inf && inf['nombre_membres'] ? inf['nombre_membres'].toString().concat(" Membre ( s ) ") : 0}
+                      {inf && inf['nombre_membres'] ? String(inf['nombre_membres']).concat(" Membre ( s ) ") : '0 Membre ( s )'}
                     </Text>
                   </View>
                   <MaterialIcons name="arrow-drop-down" size={24} color={Colors.whiteColor} />
@@ -161,7 +165,7 @@ export const HomeScreen = ({ navigation }) => {
                   <View style={{ marginTop: 10 }}>
                     <Text style={{ fontFamily: "mons-e", color: Colors.pillColor, textAlign: "center" }}>Administrateur</Text>
                     <Text style={{ fontFamily: "mons", color: Colors.whiteColor, textAlign: "center" }}>
-                      {inf && inf['nom'] ? `${inf['nom']} ${inf['postnom']}` : "---"}
+                      {inf && inf['nom'] ? String(inf['nom']).concat(" ").concat(String(inf['postnom'] || '')) : '---'}
                     </Text>
                   </View>
                   <MaterialIcons name="arrow-drop-down" size={24} color={Colors.whiteColor} />

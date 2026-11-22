@@ -18,6 +18,24 @@ import { RNPrintExample } from './screens/Print/PrintScreen';
 import { routes } from './assets/helper/helper.routes';
 import { ApprovisionnemtScreen } from './screens/Approvisionnement/Appro';
 import { ApprovisionnemtOutScreen } from './screens/Approvisionnement/Approvout';
+
+// Global unhandled rejection guard for fontfaceobserver timeout errors on Web
+// Must be installed before any font loading occurs
+if (typeof window !== 'undefined' && !window.__fontfaceobserverGuardInstalled) {
+  window.__fontfaceobserverGuardInstalled = true;
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event?.reason;
+    const isFontTimeout = reason?.message?.includes?.('fontfaceobserver') ||
+                          reason?.message?.includes?.('timeout') ||
+                          reason?.message?.includes?.('Font.loadAsync');
+    if (isFontTimeout) {
+      // Prevent unhandled rejection error from bubbling to console
+      event.preventDefault();
+      console.warn('[Font Load] Font loading timeout caught and suppressed:', reason?.message);
+      return;
+    }
+  });
+}
 import { CreditsScreen } from './screens/Credits/Credits';
 import { Memberslist } from './screens/Members/Listmembers';
 import { AddmemberScreen } from './screens/Members/Addmember';
