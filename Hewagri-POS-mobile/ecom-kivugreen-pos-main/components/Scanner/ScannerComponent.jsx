@@ -20,9 +20,10 @@ import {
   Shadows,
   Colors,
   IconSizes,
+  Typography,
 } from '../../assets/styles/Styles';
 
-export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
+export const BarcodereaderComponenent = ({ navigation, cb, rescann, instructionTitle, instructionMessage }) => {
 
   const dialogbox = React.useRef(null);
   const [hasPermission, setHasPermission] = useState(null);
@@ -82,15 +83,34 @@ export const BarcodereaderComponenent = ({ navigation, cb, rescann }) => {
       </View>
     );
   }
+
+  const hasInstructionBanner = instructionTitle || instructionMessage;
+
   return (
     <>
       <BarCodeScanner
-        style={styles.camera}
+        style={hasInstructionBanner ? styles.cameraWithBanner : styles.camera}
         barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
         onBarCodeScanned={scanned ? undefined : onBarCodeScanned}
         type={type}
         focusable
       >
+        {hasInstructionBanner && (
+          <View style={styles.instructionBanner}>
+            <View style={styles.instructionBannerContent}>
+              {instructionTitle && (
+                <Text style={styles.instructionTitle}>
+                  {instructionTitle}
+                </Text>
+              )}
+              {instructionMessage && (
+                <Text style={styles.instructionMessage}>
+                  {instructionMessage}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
         <BarcodeMask
           outerMaskOpacity={0.8}
           lineAnimationDuration={800}
@@ -162,6 +182,49 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     width: '100%',
+  },
+  cameraWithBanner: {
+    flex: 1,
+    width: '100%',
+  },
+  instructionBanner: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    borderBottomLeftRadius: BorderRadius.lg,
+    borderBottomRightRadius: BorderRadius.lg,
+    zIndex: 10,
+    ...Shadows.shadow.md,
+  },
+  instructionBannerContent: {
+    alignItems: 'center',
+    maxWidth: '90%',
+    alignSelf: 'center',
+  },
+  instructionTitle: {
+    fontFamily: Typography.fontFamilyBold,
+    fontSize: Typography.fontSize.xl,
+    color: Colors.whiteColor,
+    textAlign: 'center',
+    marginBottom: Spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  instructionMessage: {
+    fontFamily: Typography.fontFamilyRegular,
+    fontSize: Typography.fontSize.md,
+    color: 'rgba(255, 255, 255, 0.95)',
+    textAlign: 'center',
+    lineHeight: Typography.fontSize.md * 1.5,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   buttonContainer: {
     position: 'absolute',

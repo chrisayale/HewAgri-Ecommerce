@@ -73,6 +73,8 @@ export const ApprovisionnemtScreen = ({ route, navigation }) => {
                     navigation={navigation}
                     key={67657}
                     rescann={rescann}
+                    instructionTitle="Approvisionnement — Enregistrement de production"
+                    instructionMessage="Scannez le QR code de la carte du membre pour enregistrer sa production."
                     cb={async (d) => {
                         const { data, target, type } = d;
                         setrescann(false)
