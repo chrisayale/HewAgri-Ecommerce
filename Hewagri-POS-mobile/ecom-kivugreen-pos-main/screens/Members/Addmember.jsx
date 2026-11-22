@@ -128,6 +128,14 @@ export const AddmemberScreen = ({ route, navigation }) => {
     'Soja',
   ];
 
+  // Marital status options
+  const MARITAL_STATUSES = [
+    { id: 'celibataire', label: 'Célibataire' },
+    { id: 'marie', label: 'Marié(e)' },
+    { id: 'veuf', label: 'Veuf/Veuve' },
+    { id: 'divorce', label: 'Divorcé(e) / Séparé(e)' },
+  ];
+
   const memberSchemas = Yup.object().shape({
     nom: Yup.string().required('Entre le nom ici'),
     postnom: Yup.string().required('Entre le postnom ici'),
@@ -163,6 +171,13 @@ export const AddmemberScreen = ({ route, navigation }) => {
       return value;
     }),
     culturesPhares: Yup.array().of(Yup.string()),
+    etatCivil: Yup.string(),
+    nombreEnfants: Yup.number().integer().min(0).transform((value, originalValue) => {
+      if (typeof originalValue === 'string' && originalValue.trim() !== '') {
+        return parseInt(originalValue, 10);
+      }
+      return value;
+    }),
   });
 
   const __handleSubmit = async (values, { resetForm }) => {
@@ -445,6 +460,8 @@ export const AddmemberScreen = ({ route, navigation }) => {
               idterritoire: undefined,
               idvillage: undefined,
               culturesPhares: [],
+              etatCivil: '',
+              nombreEnfants: '',
             }}
             validationSchema={memberSchemas}
             onSubmit={__handleSubmit}
@@ -781,6 +798,59 @@ export const AddmemberScreen = ({ route, navigation }) => {
                                   </View>
                                 </View>
                                 {errors.idvillage && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.idvillage}</Text>}
+                              </View>
+                            </FieldRowItem>
+
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>État civil</Text>
+                                <View style={inputGroup.container}>
+                                  <View style={[inputGroup.inputcontainer, { width: "100%" }]}>
+                                    <SelectDropdown
+                                      data={[...MARITAL_STATUSES]}
+                                      onSelect={(selectedItem, index) => {
+                                        const { id } = selectedItem
+                                        handleChange('etatCivil')(`${id}`)
+                                      }}
+                                      renderButton={(selectedItem, isOpened) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownButtonStyle, width: "100%", backgroundColor: Colors.whiteColor, height: inputHeight }}>
+                                            <Text style={{ ...dropdown.dropdownButtonTxtStyle, fontFamily: Typography.fontFamily.bold, color: Colors.primary[500], fontSize: inputFontSize }}>
+                                              {(selectedItem && selectedItem.label) || 'Sélectionner l\'état civil'}
+                                            </Text>
+                                            <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
+                                          </View>
+                                        );
+                                      }}
+                                      renderItem={(item, index, isSelected) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                            <Text style={{ ...dropdown.dropdownItemTxtStyle, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize }}>{item.label}</Text>
+                                          </View>
+                                        );
+                                      }}
+                                      showsVerticalScrollIndicator={false}
+                                      dropdownStyle={dropdown.dropdownMenuStyle}
+                                      defaultValue={values.etatCivil}
+                                    />
+                                  </View>
+                                </View>
+                                {errors.etatCivil && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.etatCivil}</Text>}
+                              </View>
+                            </FieldRowItem>
+
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Nombre d'enfant</Text>
+                                <TextInput
+                                  value={values.nombreEnfants}
+                                  placeholder='0'
+                                  maxLength={3}
+                                  keyboardType={"numeric"}
+                                  onChangeText={(t) => handleChange('nombreEnfants')(`${t}`)}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                                />
+                                {errors.nombreEnfants && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.nombreEnfants}</Text>}
                               </View>
                             </FieldRowItem>
                           </ResponsiveFieldRow>
