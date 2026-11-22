@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Title } from '../../components/Title/Title'
-import { RefreshControl, Text, TextInput, TouchableHighlight, View, Platform, KeyboardAvoidingView, StyleSheet, ScrollView } from 'react-native';
+import { RefreshControl, Text, TextInput, TouchableHighlight, TouchableOpacity, View, Platform, KeyboardAvoidingView, StyleSheet, ScrollView } from 'react-native';
 import { Dims } from '../../assets/dimensions/Dimemensions';
 import DialogBox from 'react-native-dialogbox';
 import Snackbar from 'react-native-snackbar';
@@ -48,6 +48,9 @@ import {
   Shadows,
   Colors,
   ComponentTokens,
+  Typography,
+  Layout,
+  Responsive,
 } from '../../assets/styles/Styles';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -66,14 +69,40 @@ export const AddmemberScreen = ({ route, navigation }) => {
 
   const { width, height } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
-  const isDesktop = isWeb && width > 768;
+  const isDesktop = isWeb && width >= 1024;
   const isTablet = isWeb && width >= 768 && width < 1024;
+  const isMobile = !isDesktop && !isTablet;
 
-  const formMaxWidth = isDesktop ? 680 : isTablet ? 600 : '100%';
+  // Responsive container sizing
+  const formMaxWidth = isDesktop ? 800 : isTablet ? 680 : '100%';
   const formPadding = isDesktop ? 32 : isTablet ? 24 : 16;
-  const inputHeight = ComponentTokens.input.height.md;
-  const labelFontSize = isWeb ? 14 : 14;
-  const inputFontSize = isWeb ? 14 : 16;
+  const innerPadding = isDesktop ? 24 : isTablet ? 16 : 12;
+
+  // Responsive heights and fonts
+  const inputHeight = isDesktop ? ComponentTokens.input.height.lg :
+                      isTablet ? ComponentTokens.input.height.md :
+                      ComponentTokens.input.height.md;
+  const labelFontSize = Typography.fontSize.sm;
+  const inputFontSize = isDesktop ? Typography.fontSize.base :
+                        isTablet ? Typography.fontSize.base :
+                        Typography.fontSize.md;
+  const titleFontSize = isDesktop ? Typography.fontSize['2xl'] :
+                        isTablet ? Typography.fontSize.xl :
+                        Typography.fontSize.xl;
+  const buttonHeight = isDesktop ? ComponentTokens.button.height.lg :
+                       isTablet ? ComponentTokens.button.height.md :
+                       ComponentTokens.button.height.md;
+
+  // Two-column layout on desktop/tablet for field pairs
+  const useTwoColumns = isDesktop || isTablet;
+
+  // ScrollView content container style - ensures proper scrolling on all platforms
+  const scrollContentStyle = {
+    flexGrow: 1,
+    paddingBottom: Spacing['3xl'], // Extra bottom padding for keyboard avoidance and submit button
+    paddingHorizontal: formPadding,
+    minHeight: height - (isWeb ? 120 : 200), // Ensure minimum height for scrolling
+  };
 
   const { idcooperative, user, token } = global;
   const [isloading, setisloading] = React.useState();
@@ -83,6 +112,21 @@ export const AddmemberScreen = ({ route, navigation }) => {
   const [temps, settemps] = React.useState([]);
   const [keyword, setkeyword] = React.useState("");
   const [villages, setvillages] = React.useState([])
+  const [showCustomCropInput, setShowCustomCropInput] = React.useState(false);
+  const [customCropValue, setCustomCropValue] = React.useState('');
+
+  // Staple crops list for multi-selection
+  const STAPLE_CROPS = [
+    'Maïs',
+    'Haricot',
+    'Manioc',
+    'Pomme de terre',
+    'Riz',
+    'Café',
+    'Cacao',
+    'Banane',
+    'Soja',
+  ];
 
   const memberSchemas = Yup.object().shape({
     nom: Yup.string().required('Entre le nom ici'),
@@ -93,11 +137,32 @@ export const AddmemberScreen = ({ route, navigation }) => {
       'Le numéro doit commencer par +243 ou 0 et être suivi d\'un préfixe valide (81, 82, 83, etc.).'
     ),
     genre: Yup.string().required('Selectionner le sexe'),
-    hectare_cultive: Yup.number().required("Entre l'hectare cultivé par l'agriculteur"),
+    hectare_cultive: Yup.number().required("Entre l'hectare cultivé par l'agriculteur").transform((value, originalValue) => {
+      if (typeof originalValue === 'string' && originalValue.trim() !== '') {
+        return parseFloat(originalValue);
+      }
+      return value;
+    }),
     // currency: Yup.string().required('Sélectionner la dévise'),
-    date_production_d: Yup.number().positive().min(1).max(31).required('Entrer le jour de naissance'),
-    date_production_m: Yup.number().positive().min(1).max(12).required('Entrer le mois de naissance'),
-    date_production_y: Yup.number().positive().min(new Date().getFullYear() - 100).max(new Date().getFullYear() - 17).required(`Entrer une valeur pour l'année qui est valide inferieure à ${new Date().getFullYear() - 17}`),
+    date_production_d: Yup.number().positive().min(1).max(31).required('Entrer le jour de naissance').transform((value, originalValue) => {
+      if (typeof originalValue === 'string' && originalValue.trim() !== '') {
+        return parseInt(originalValue, 10);
+      }
+      return value;
+    }),
+    date_production_m: Yup.number().positive().min(1).max(12).required('Entrer le mois de naissance').transform((value, originalValue) => {
+      if (typeof originalValue === 'string' && originalValue.trim() !== '') {
+        return parseInt(originalValue, 10);
+      }
+      return value;
+    }),
+    date_production_y: Yup.number().positive().min(new Date().getFullYear() - 100).max(new Date().getFullYear() - 17).required(`Entrer une valeur pour l'année qui est valide inferieure à ${new Date().getFullYear() - 17}`).transform((value, originalValue) => {
+      if (typeof originalValue === 'string' && originalValue.trim() !== '') {
+        return parseInt(originalValue, 10);
+      }
+      return value;
+    }),
+    culturesPhares: Yup.array().of(Yup.string()),
   });
 
   const __handleSubmit = async (values, { resetForm }) => {
@@ -162,48 +227,48 @@ export const AddmemberScreen = ({ route, navigation }) => {
     const { email, id, nom, postnom, phone, prenom } = __tbl_ecom_user;
     const { sigle, cooperative } = __tbl_ecom_cooperative;
     const isWebView = Platform.OS === 'web';
-    const itemFontSize = isWebView ? 13 : 14;
-    const itemTitleFontSize = isWebView ? 16 : 18;
+    const itemFontSize = isWebView ? Typography.fontSize.sm : Typography.fontSize.md;
+    const itemTitleFontSize = isWebView ? Typography.fontSize.lg : Typography.fontSize.xl;
 
     return (
       <View style={{
         width: "100%",
-        padding: isWebView ? 16 : 12,
-        backgroundColor: Colors.pillColor,
-        elevation: isWebView ? 2 : 5,
-        marginTop: isWebView ? 8 : 15,
+        padding: isWebView ? Spacing.md : Spacing.lg,
+        backgroundColor: Colors.surface.primary,
+        elevation: isWebView ? 0 : 4,
+        marginTop: isWebView ? Spacing.sm : Spacing.md,
         flexDirection: "row",
         alignItems: "flex-start",
-        borderRadius: isWebView ? 8 : 0,
-        ...Shadows.shadow.sm,
+        borderRadius: isWebView ? BorderRadius.md : 0,
+        ...(isWebView ? Shadows.shadow.sm : Shadows.shadow.md),
       }}>
-        <View style={{ width: "90%", paddingRight: 12 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+        <View style={{ width: "90%", paddingRight: Spacing.md }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: Spacing.sm }}>
             <View>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemTitleFontSize }}>ID: <Text style={{ fontFamily: "mons-b", color: Colors.primaryColor }}>{asid}</Text></Text>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Coopec: <Text style={{ fontFamily: "mons-b", color: Colors.primaryColor }}>{cooperative}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemTitleFontSize }}>ID: <Text style={{ fontFamily: Typography.fontFamily.bold, color: Colors.primary[500] }}>{asid}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Coopec: <Text style={{ fontFamily: Typography.fontFamily.bold, color: Colors.primary[500] }}>{cooperative}</Text></Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Membre depuis</Text>
-              <Text style={{ fontFamily: "mons-b", fontSize: itemFontSize }}>{formatDate({ date: createdAt })}</Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Membre depuis</Text>
+              <Text style={{ fontFamily: Typography.fontFamily.bold, fontSize: itemFontSize }}>{formatDate({ date: createdAt })}</Text>
             </View>
           </View>
-          <Divider style={{ marginVertical: 8 }} />
-          <View style={{ flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-            <View style={{ marginTop: isWebView ? 4 : 10, minWidth: "40%" }}>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Nom: <Text style={{ fontFamily: "mons-b" }}>{nom}</Text></Text>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Postnom: <Text style={{ fontFamily: "mons-b" }}>{postnom}</Text></Text>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Prénom: <Text style={{ fontFamily: "mons-b" }}>{prenom}</Text></Text>
+          <Divider style={{ marginVertical: Spacing.sm }} />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: Spacing.md }}>
+            <View style={{ marginTop: isWebView ? Spacing.xs : Spacing.sm, minWidth: useTwoColumns ? "45%" : "100%" }}>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Nom: <Text style={{ fontFamily: Typography.fontFamily.bold }}>{nom}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Postnom: <Text style={{ fontFamily: Typography.fontFamily.bold }}>{postnom}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Prénom: <Text style={{ fontFamily: Typography.fontFamily.bold }}>{prenom}</Text></Text>
             </View>
-            <View style={{ marginTop: isWebView ? 4 : 10, minWidth: "50%" }}>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Télé.: <Text style={{ fontFamily: "mons-b" }}>{phone}</Text></Text>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Email: <Text style={{ fontFamily: "mons-b" }}>{email}</Text></Text>
-              <Text style={{ fontFamily: "mons-e", fontSize: itemFontSize }}>Exp.: <Text style={{ fontFamily: "mons-b", color: Colors.dangerColor }}>{unixToDate({ unix: date_expiration_unix })}</Text></Text>
+            <View style={{ marginTop: isWebView ? Spacing.xs : Spacing.sm, minWidth: useTwoColumns ? "50%" : "100%" }}>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Télé.: <Text style={{ fontFamily: Typography.fontFamily.bold }}>{phone}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Email: <Text style={{ fontFamily: Typography.fontFamily.bold }}>{email}</Text></Text>
+              <Text style={{ fontFamily: Typography.fontFamily.medium, fontSize: itemFontSize }}>Exp.: <Text style={{ fontFamily: Typography.fontFamily.bold, color: Colors.danger.main }}>{unixToDate({ unix: date_expiration_unix })}</Text></Text>
             </View>
           </View>
         </View>
-        <View style={{ width: "10%", alignContent: "center", alignItems: "center", justifyContent: "center", backgroundColor: Colors.pillColor }}>
-          <Entypo name="chevron-right" size={24} color={Colors.primaryColor} />
+        <View style={{ width: "10%", alignContent: "center", alignItems: "center", justifyContent: "center", backgroundColor: Colors.surface.primary }}>
+          <Entypo name="chevron-right" size={24} color={Colors.primary[500]} />
         </View>
       </View>
     )
@@ -298,16 +363,32 @@ export const AddmemberScreen = ({ route, navigation }) => {
     __onLoad()
   }, [])
 
+  // Helper component for responsive field row
+  const ResponsiveFieldRow = ({ children, style, ...props }) => (
+    <View style={[fieldRow, useTwoColumns ? { flexDirection: 'row', gap: Spacing.md } : { flexDirection: 'column', gap: 0 }, style]} {...props}>
+      {children}
+    </View>
+  );
+
+  // Helper for field row item (half width on desktop/tablet)
+  const FieldRowItem = ({ children, style, ...props }) => (
+    <View style={[fieldRowItem, useTwoColumns ? { flex: 1, minWidth: 0 } : { width: '100%' }, style]} {...props}>
+      {children}
+    </View>
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background.primary }}>
       <Title navigation={navigation} title={"Ajout membre"} subtitle={"Formulaire d'ajout d'un membre"} />
-      <View style={{ width: formMaxWidth, alignSelf: "center", marginTop: isWeb ? 16 : 80, paddingHorizontal: formPadding }}>
-        <View style={{ marginBottom: isWeb ? 16 : 24 }}>
+
+      {/* Tab Bar */}
+      <View style={{ width: formMaxWidth, alignSelf: "center", marginTop: isWeb ? Spacing.md : Spacing['2xl'], paddingHorizontal: formPadding }}>
+        <View style={{ marginBottom: isWeb ? Spacing.md : Spacing.lg }}>
           <SegmentedControl
             tintColor={Colors.whiteColor}
             style={{
               height: isWeb ? 44 : 52,
-              borderRadius: isWeb ? 8 : BorderRadius.md,
+              borderRadius: isWeb ? BorderRadius.md : BorderRadius.md,
               elevation: isWeb ? 0 : 4,
               boxShadow: isWeb ? '0 2px 8px rgba(0,0,0,0.08)' : undefined,
               backgroundColor: Colors.primary[500],
@@ -315,20 +396,20 @@ export const AddmemberScreen = ({ route, navigation }) => {
             }}
             backgroundColor={Colors.primary[500]}
             fontStyle={{
-              fontFamily: "mons-e",
+              fontFamily: Typography.fontFamily.medium,
               color: Colors.whiteColor,
-              fontSize: isWeb ? 13 : 14
+              fontSize: isWeb ? Typography.fontSize.sm : Typography.fontSize.md
             }}
             onValueChange={(v) => { }}
             tabStyle={{
               height: isWeb ? 44 : 52,
-              borderRadius: isWeb ? 6 : BorderRadius.sm,
+              borderRadius: isWeb ? BorderRadius.sm : BorderRadius.sm,
             }}
             appearance='light'
             activeFontStyle={{
-              fontFamily: "mons-e",
+              fontFamily: Typography.fontFamily.medium,
               color: Colors.primary[500],
-              fontSize: isWeb ? 13 : 14
+              fontSize: isWeb ? Typography.fontSize.sm : Typography.fontSize.md
             }}
             values={[...Array.from(tabs).map(t => t['name'])]}
             selectedIndex={step}
@@ -337,16 +418,17 @@ export const AddmemberScreen = ({ route, navigation }) => {
               const { selectedSegmentIndex } = nativeEvent;
               setstep(selectedSegmentIndex)
             }}
-            activeStyle={{ borderRadius: isWeb ? 6 : 12, backgroundColor: Colors.whiteColor }}
+            activeStyle={{ borderRadius: isWeb ? BorderRadius.sm : BorderRadius.sm, backgroundColor: Colors.whiteColor }}
           />
         </View>
       </View>
-      <View style={{ width: "100%", paddingTop: isWeb ? 16 : 40 }}>
+
+      <View style={{ width: "100%", flex: 1, paddingTop: isWeb ? Spacing.md : Spacing.xl }}>
+        {/* Step 0: Nouveau membre form */}
         {step === 0 && (
           <Formik
             key={788775}
             initialValues={{
-              // key: index,
               nom: '',
               postnom: '',
               prenom: '',
@@ -361,7 +443,8 @@ export const AddmemberScreen = ({ route, navigation }) => {
               password: '123456',
               idprovince: undefined,
               idterritoire: undefined,
-              idvillage: undefined
+              idvillage: undefined,
+              culturesPhares: [],
             }}
             validationSchema={memberSchemas}
             onSubmit={__handleSubmit}
@@ -369,55 +452,63 @@ export const AddmemberScreen = ({ route, navigation }) => {
             {({ handleChange, handleBlur, handleSubmit, values, errors }) => {
               return (
                 <>
-                  {/* -------------------------- */}
                   <KeyboardAvoidingView
-                    behavior={isWeb ? 'padding' : 'height'}
-                    style={{ flex: 1 }}
-                    keyboardVerticalOffset={isWeb ? 0 : 100}
+                    behavior={isWeb ? 'padding' : Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={{ flex: 1, width: '100%' }}
+                    keyboardVerticalOffset={isWeb ? 0 : Platform.OS === 'ios' ? 0 : 100}
+                    enabled
                   >
                     <ScrollView
-                      contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: formPadding }}
-                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={scrollContentStyle}
+                      showsVerticalScrollIndicator={!isWeb}
+                      keyboardShouldPersistTaps="handled"
+                      keyboardDismissMode={isWeb ? 'none' : 'on-drag'}
                       refreshControl={<RefreshControl
                         colors={[Colors.primary[500]]}
                         refreshing={isloading}
                         onRefresh={() => { }}
                       />}
                     >
-                      <View style={{ width: formMaxWidth, alignSelf: 'center', marginTop: isWeb ? 16 : 24 }}>
+                      <View style={{ width: formMaxWidth, alignSelf: 'center', marginTop: isWeb ? Spacing.md : Spacing.lg, flex: 1, minWidth: 0 }}>
 
                         {/* Section: Informations personnelles */}
                         <View style={section}>
-                          <Text style={sectionTitle}>Informations personnelles</Text>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Informations personnelles</Text>
                           <Text style={sectionSubtitle}>Remplissez les champs obligatoires marqués d'un *</Text>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Nom <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                            <TextInput
-                              value={values.nom}
-                              placeholder='Nom'
-                              maxLength={50}
-                              keyboardType={"default"}
-                              autoCapitalize="words"
-                              onChangeText={(t) => handleChange('nom')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
-                            />
-                          </View>
-                          {errors.nom && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.nom}</Text>}
+                          <ResponsiveFieldRow>
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Nom <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                                <TextInput
+                                  value={values.nom}
+                                  placeholder='Nom'
+                                  maxLength={50}
+                                  keyboardType={"default"}
+                                  autoCapitalize="words"
+                                  onChangeText={(t) => handleChange('nom')(`${t}`)}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                                />
+                              </View>
+                              {errors.nom && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.nom}</Text>}
+                            </FieldRowItem>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Postnom <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                            <TextInput
-                              value={values.postnom}
-                              placeholder='Postnom'
-                              maxLength={50}
-                              keyboardType={"default"}
-                              autoCapitalize="words"
-                              onChangeText={(t) => handleChange('postnom')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
-                            />
-                          </View>
-                          {errors.postnom && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.postnom}</Text>}
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Postnom <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                                <TextInput
+                                  value={values.postnom}
+                                  placeholder='Postnom'
+                                  maxLength={50}
+                                  keyboardType={"default"}
+                                  autoCapitalize="words"
+                                  onChangeText={(t) => handleChange('postnom')(`${t}`)}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                                />
+                              </View>
+                              {errors.postnom && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.postnom}</Text>}
+                            </FieldRowItem>
+                          </ResponsiveFieldRow>
 
                           <View style={fieldGroup}>
                             <Text style={[inputLabel, { fontSize: labelFontSize }]}>Prénom</Text>
@@ -428,48 +519,54 @@ export const AddmemberScreen = ({ route, navigation }) => {
                               keyboardType={"default"}
                               autoCapitalize="words"
                               onChangeText={(t) => handleChange('prenom')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                              style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
                             />
                           </View>
-                          {errors.prenom && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.prenom}</Text>}
+                          {errors.prenom && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.prenom}</Text>}
                         </View>
 
                         {/* Section: Contact */}
                         <View style={section}>
-                          <Text style={sectionTitle}>Contact</Text>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Contact</Text>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Téléphone <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                            <TextInput
-                              value={values.phone}
-                              placeholder='+243 81 23 45 67'
-                              maxLength={50}
-                              keyboardType={"number-pad"}
-                              onChangeText={(t) => handleChange('phone')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
-                            />
-                          </View>
-                          {errors.phone && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.phone}</Text>}
+                          <ResponsiveFieldRow>
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Téléphone <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                                <TextInput
+                                  value={values.phone}
+                                  placeholder='+243 81 23 45 67'
+                                  maxLength={50}
+                                  keyboardType={"number-pad"}
+                                  onChangeText={(t) => handleChange('phone')(`${t}`)}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                                />
+                              </View>
+                              {errors.phone && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.phone}</Text>}
+                            </FieldRowItem>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Adresse email</Text>
-                            <TextInput
-                              value={values.email}
-                              placeholder='email@exemple.com'
-                              maxLength={50}
-                              keyboardType={"email-address"}
-                              autoCapitalize="none"
-                              autoComplete="email"
-                              onChangeText={(t) => handleChange('email')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
-                            />
-                          </View>
-                          {errors.email && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.email}</Text>}
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Adresse email</Text>
+                                <TextInput
+                                  value={values.email}
+                                  placeholder='email@exemple.com'
+                                  maxLength={50}
+                                  keyboardType={"email-address"}
+                                  autoCapitalize="none"
+                                  autoComplete="email"
+                                  onChangeText={(t) => handleChange('email')(`${t}`)}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                                />
+                              </View>
+                              {errors.email && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.email}</Text>}
+                            </FieldRowItem>
+                          </ResponsiveFieldRow>
                         </View>
 
                         {/* Section: Détails agricoles */}
                         <View style={section}>
-                          <Text style={sectionTitle}>Détails agricoles</Text>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Détails agricoles</Text>
 
                           <View style={fieldGroup}>
                             <Text style={[inputLabel, { fontSize: labelFontSize }]}>Hectare cultivé</Text>
@@ -479,95 +576,221 @@ export const AddmemberScreen = ({ route, navigation }) => {
                               maxLength={50}
                               keyboardType={"numeric"}
                               onChangeText={(t) => handleChange('hectare_cultive')(`${t}`)}
-                              style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize }]}
+                              style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize }]}
                             />
                           </View>
-                          {errors.hectare_cultive && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.hectare_cultive}</Text>}
+                          {errors.hectare_cultive && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.hectare_cultive}</Text>}
+
+                          <View style={[fieldGroup, { marginTop: Spacing.md }]}>
+                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Cultures phares cultivées <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.xs }}>
+                              {STAPLE_CROPS.map((crop, index) => (
+                                <TouchableOpacity
+                                  key={crop}
+                                  onPress={() => {
+                                    const currentCrops = values.culturesPhares || [];
+                                    const isSelected = currentCrops.includes(crop);
+                                    const newCrops = isSelected
+                                      ? currentCrops.filter(c => c !== crop)
+                                      : [...currentCrops, crop];
+                                    handleChange('culturesPhares')(newCrops);
+                                  }}
+                                  style={{
+                                    paddingHorizontal: Spacing.md,
+                                    paddingVertical: Spacing.sm,
+                                    borderRadius: BorderRadius.full,
+                                    backgroundColor: (values.culturesPhares || []).includes(crop) ? Colors.primary[500] : Colors.surface.primary,
+                                    borderWidth: 1,
+                                    borderColor: (values.culturesPhares || []).includes(crop) ? Colors.primary[500] : Colors.border.main,
+                                    ...Shadows.shadow.xs,
+                                  }}
+                                >
+                                  <Text style={{
+                                    fontFamily: Typography.fontFamily.medium,
+                                    fontSize: inputFontSize,
+                                    color: (values.culturesPhares || []).includes(crop) ? Colors.whiteColor : Colors.text.primary,
+                                  }}>
+                                    {crop}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                              <TouchableOpacity
+                                onPress={() => setShowCustomCropInput(true)}
+                                style={{
+                                  paddingHorizontal: Spacing.md,
+                                  paddingVertical: Spacing.sm,
+                                  borderRadius: BorderRadius.full,
+                                  backgroundColor: Colors.surface.primary,
+                                  borderWidth: 1,
+                                  borderColor: Colors.border.main,
+                                  borderStyle: 'dashed',
+                                  ...Shadows.shadow.xs,
+                                }}
+                              >
+                                <Text style={{
+                                  fontFamily: Typography.fontFamily.medium,
+                                  fontSize: inputFontSize,
+                                  color: Colors.text.tertiary,
+                                }}>
+                                  + Autre
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                            {(values.culturesPhares || []).length === 0 && !showCustomCropInput && (
+                              <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>Sélectionner au moins une culture</Text>
+                            )}
+                            {showCustomCropInput && (
+                              <View style={{ flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm, flexWrap: 'wrap' }}>
+                                <TextInput
+                                  value={customCropValue}
+                                  onChangeText={setCustomCropValue}
+                                  placeholder='Nom de la culture'
+                                  style={{
+                                    flex: 1,
+                                    minWidth: isMobile ? '100%' : 200,
+                                    height: inputHeight,
+                                    ...input,
+                                    fontFamily: Typography.fontFamily.regular,
+                                    fontSize: inputFontSize,
+                                  }}
+                                  autoCapitalize="words"
+                                  maxLength={50}
+                                />
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    if (customCropValue.trim()) {
+                                      const currentCrops = values.culturesPhares || [];
+                                      if (!currentCrops.includes(customCropValue.trim())) {
+                                        handleChange('culturesPhares')([...currentCrops, customCropValue.trim()]);
+                                      }
+                                      setCustomCropValue('');
+                                      setShowCustomCropInput(false);
+                                    }
+                                  }}
+                                  style={{
+                                    height: inputHeight,
+                                    paddingHorizontal: Spacing.md,
+                                    borderRadius: BorderRadius.button,
+                                    backgroundColor: Colors.primary[500],
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    ...Shadows.shadow.sm,
+                                  }}
+                                >
+                                  <Text style={{ color: Colors.whiteColor, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize }}>
+                                    Ajouter
+                                  </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                  onPress={() => { setCustomCropValue(''); setShowCustomCropInput(false); }}
+                                  style={{
+                                    height: inputHeight,
+                                    paddingHorizontal: Spacing.md,
+                                    borderRadius: BorderRadius.button,
+                                    backgroundColor: Colors.neutral[300],
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Text style={{ color: Colors.text.secondary, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize }}>
+                                    Annuler
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                            {errors.culturesPhares && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.culturesPhares}</Text>}
+                          </View>
                         </View>
 
                         {/* Section: Sexe et Village */}
                         <View style={section}>
-                          <Text style={sectionTitle}>Profil</Text>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Profil</Text>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Sexe <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                            <View style={inputGroup.container}>
-                              <View style={[inputGroup.inputcontainer, { width: "100%" }]}>
-                                <SelectDropdown
-                                  data={[...genders]}
-                                  onSelect={(selectedItem, index) => {
-                                    const { id } = selectedItem
-                                    handleChange('genre')(`${id}`)
-                                  }}
-                                  renderButton={(selectedItem, isOpened) => {
-                                    return (
-                                      <View style={{ ...dropdown.dropdownButtonStyle, width: "100%", backgroundColor: Colors.whiteColor, height: inputHeight }}>
-                                        <Text style={{ ...dropdown.dropdownButtonTxtStyle, fontFamily: "mons-b", color: Colors.primaryColor, fontSize: inputFontSize }}>
-                                          {(selectedItem && selectedItem.label) || 'Sélectionner le sexe'}
-                                        </Text>
-                                        <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
-                                      </View>
-                                    );
-                                  }}
-                                  renderItem={(item, index, isSelected) => {
-                                    return (
-                                      <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
-                                        <Text style={{ ...dropdown.dropdownItemTxtStyle, fontFamily: "mons-e", fontSize: inputFontSize }}>{item.label}</Text>
-                                      </View>
-                                    );
-                                  }}
-                                  showsVerticalScrollIndicator={false}
-                                  dropdownStyle={dropdown.dropdownMenuStyle}
-                                  defaultValue={values.genre}
-                                />
+                          <ResponsiveFieldRow>
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Sexe <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                                <View style={inputGroup.container}>
+                                  <View style={[inputGroup.inputcontainer, { width: "100%" }]}>
+                                    <SelectDropdown
+                                      data={[...genders]}
+                                      onSelect={(selectedItem, index) => {
+                                        const { id } = selectedItem
+                                        handleChange('genre')(`${id}`)
+                                      }}
+                                      renderButton={(selectedItem, isOpened) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownButtonStyle, width: "100%", backgroundColor: Colors.whiteColor, height: inputHeight }}>
+                                            <Text style={{ ...dropdown.dropdownButtonTxtStyle, fontFamily: Typography.fontFamily.bold, color: Colors.primary[500], fontSize: inputFontSize }}>
+                                              {(selectedItem && selectedItem.label) || 'Sélectionner le sexe'}
+                                            </Text>
+                                            <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
+                                          </View>
+                                        );
+                                      }}
+                                      renderItem={(item, index, isSelected) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                            <Text style={{ ...dropdown.dropdownItemTxtStyle, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize }}>{item.label}</Text>
+                                          </View>
+                                        );
+                                      }}
+                                      showsVerticalScrollIndicator={false}
+                                      dropdownStyle={dropdown.dropdownMenuStyle}
+                                      defaultValue={values.genre}
+                                    />
+                                  </View>
+                                </View>
+                                {errors.genre && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.genre}</Text>}
                               </View>
-                            </View>
-                            {errors.genre && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.genre}</Text>}
-                          </View>
+                            </FieldRowItem>
 
-                          <View style={fieldGroup}>
-                            <Text style={[inputLabel, { fontSize: labelFontSize }]}>Village <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                            <View style={inputGroup.container}>
-                              <View style={[inputGroup.inputcontainer, { width: "100%" }]}>
-                                <SelectDropdown
-                                  search
-                                  data={[...villages]}
-                                  onSelect={(selectedItem, index) => {
-                                    const { id } = selectedItem
-                                    handleChange('idvillage')(`${id}`)
-                                  }}
-                                  renderButton={(selectedItem, isOpened) => {
-                                    return (
-                                      <View style={{ ...dropdown.dropdownButtonStyle, width: "100%", backgroundColor: Colors.whiteColor, height: inputHeight }}>
-                                        <Text style={{ ...dropdown.dropdownButtonTxtStyle, fontFamily: "mons-b", color: Colors.primaryColor, fontSize: inputFontSize }}>
-                                          {(selectedItem && selectedItem.village) || 'Sélectionner un village'}
-                                        </Text>
-                                        <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
-                                      </View>
-                                    );
-                                  }}
-                                  renderItem={(item, index, isSelected) => {
-                                    return (
-                                      <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
-                                        <Text style={{ ...dropdown.dropdownItemTxtStyle, fontFamily: "mons-e", fontSize: inputFontSize }}>{item.village}</Text>
-                                      </View>
-                                    );
-                                  }}
-                                  defaultValue={values.idvillage}
-                                  showsVerticalScrollIndicator={false}
-                                  dropdownStyle={dropdown.dropdownMenuStyle}
-                                />
+                            <FieldRowItem>
+                              <View style={fieldGroup}>
+                                <Text style={[inputLabel, { fontSize: labelFontSize }]}>Village <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                                <View style={inputGroup.container}>
+                                  <View style={[inputGroup.inputcontainer, { width: "100%" }]}>
+                                    <SelectDropdown
+                                      search
+                                      data={[...villages]}
+                                      onSelect={(selectedItem, index) => {
+                                        const { id } = selectedItem
+                                        handleChange('idvillage')(`${id}`)
+                                      }}
+                                      renderButton={(selectedItem, isOpened) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownButtonStyle, width: "100%", backgroundColor: Colors.whiteColor, height: inputHeight }}>
+                                            <Text style={{ ...dropdown.dropdownButtonTxtStyle, fontFamily: Typography.fontFamily.bold, color: Colors.primary[500], fontSize: inputFontSize }}>
+                                              {(selectedItem && selectedItem.village) || 'Sélectionner un village'}
+                                            </Text>
+                                            <Entypo name={isOpened ? 'chevron-up' : 'chevron-down'} size={18} color="black" />
+                                          </View>
+                                        );
+                                      }}
+                                      renderItem={(item, index, isSelected) => {
+                                        return (
+                                          <View style={{ ...dropdown.dropdownItemStyle, ...(isSelected && { backgroundColor: '#D2D9DF' }) }}>
+                                            <Text style={{ ...dropdown.dropdownItemTxtStyle, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize }}>{item.village}</Text>
+                                          </View>
+                                        );
+                                      }}
+                                      defaultValue={values.idvillage}
+                                      showsVerticalScrollIndicator={false}
+                                      dropdownStyle={dropdown.dropdownMenuStyle}
+                                    />
+                                  </View>
+                                </View>
+                                {errors.idvillage && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.idvillage}</Text>}
                               </View>
-                            </View>
-                            {errors.idvillage && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.idvillage}</Text>}
-                          </View>
+                            </FieldRowItem>
+                          </ResponsiveFieldRow>
                         </View>
 
                         {/* Section: Date de naissance */}
                         <View style={section}>
-                          <Text style={sectionTitle}>Date de naissance <Text style={{ color: Colors.danger.main }}>*</Text></Text>
-                          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
-                            <View style={{ flex: 1 }}>
+                          <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Date de naissance <Text style={{ color: Colors.danger.main }}>*</Text></Text>
+                          <ResponsiveFieldRow>
+                            <FieldRowItem>
                               <View style={fieldGroup}>
                                 <Text style={[inputLabel, { fontSize: labelFontSize }]}>Jour</Text>
                                 <TextInput
@@ -575,12 +798,12 @@ export const AddmemberScreen = ({ route, navigation }) => {
                                   maxLength={2}
                                   keyboardType={"numeric"}
                                   onChangeText={(t) => handleChange('date_production_d')(`${t}`)}
-                                  style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
                                 />
                               </View>
-                              {errors.date_production_d && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.date_production_d}</Text>}
-                            </View>
-                            <View style={{ flex: 1 }}>
+                              {errors.date_production_d && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.date_production_d}</Text>}
+                            </FieldRowItem>
+                            <FieldRowItem>
                               <View style={fieldGroup}>
                                 <Text style={[inputLabel, { fontSize: labelFontSize }]}>Mois</Text>
                                 <TextInput
@@ -588,12 +811,12 @@ export const AddmemberScreen = ({ route, navigation }) => {
                                   maxLength={2}
                                   keyboardType={"numeric"}
                                   onChangeText={(t) => handleChange('date_production_m')(`${t}`)}
-                                  style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
                                 />
                               </View>
-                              {errors.date_production_m && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.date_production_m}</Text>}
-                            </View>
-                            <View style={{ flex: 1 }}>
+                              {errors.date_production_m && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.date_production_m}</Text>}
+                            </FieldRowItem>
+                            <FieldRowItem>
                               <View style={fieldGroup}>
                                 <Text style={[inputLabel, { fontSize: labelFontSize }]}>Année</Text>
                                 <TextInput
@@ -601,34 +824,34 @@ export const AddmemberScreen = ({ route, navigation }) => {
                                   maxLength={4}
                                   keyboardType={"numeric"}
                                   onChangeText={(t) => handleChange('date_production_y')(`${t}`)}
-                                  style={[input, { fontFamily: "mons", width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
+                                  style={[input, { fontFamily: Typography.fontFamily.regular, width: "100%", height: inputHeight, fontSize: inputFontSize, textAlign: 'center' }]}
                                 />
                               </View>
-                              {errors.date_production_y && <Text style={[inputErrorText, { fontSize: 12, marginTop: Spacing.xs }]}>{errors.date_production_y}</Text>}
-                            </View>
-                          </View>
+                              {errors.date_production_y && <Text style={[inputErrorText, { fontSize: Typography.fontSize.xs, marginTop: Spacing.xs }]}>{errors.date_production_y}</Text>}
+                            </FieldRowItem>
+                          </ResponsiveFieldRow>
                         </View>
 
                         {/* Submit Button */}
-                        <View style={{ width: "100%", marginTop: 24, marginBottom: 40 }}>
+                        <View style={{ width: "100%", marginTop: Spacing.xl, marginBottom: Spacing['2xl'] }}>
                           <TouchableHighlight
                             onPress={() => {
                               handleSubmit()
                             }}
                             disabled={isloading}
                             underlayColor={Colors.primary[600]}
-                            style={[btnPrimaryLg, { width: "100%", height: inputHeight }]}
+                            style={[btnPrimaryLg, { width: "100%", height: buttonHeight }]}
                             activeOpacity={0.9}
                           >
                             {isloading
                               ?
                               <Loader />
                               :
-                              <Text style={{ color: Colors.whiteColor, fontFamily: "mons", fontSize: inputFontSize, fontWeight: '600' }}>Enregistrer</Text>
+                              <Text style={{ color: Colors.whiteColor, fontFamily: Typography.fontFamily.medium, fontSize: inputFontSize, fontWeight: '600' }}>Enregistrer</Text>
                           }
                           </TouchableHighlight>
                           {output && (
-                            <Text style={{ fontFamily: "mons", fontSize: 13, marginTop: 10, color: Colors.danger.main, textAlign: "center" }}>
+                            <Text style={{ fontFamily: Typography.fontFamily.regular, fontSize: Typography.fontSize.sm, marginTop: Spacing.md, color: Colors.danger.main, textAlign: "center" }}>
                               {output}
                             </Text>
                           )}
@@ -642,24 +865,28 @@ export const AddmemberScreen = ({ route, navigation }) => {
           </Formik>
         )}
 
+        {/* Step 1: Ancien utilisateur search */}
         {step === 1 && (
           <KeyboardAvoidingView
-            behavior={isWeb ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={isWeb ? 0 : 100}
+            behavior={isWeb ? 'padding' : Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1, width: '100%' }}
+            keyboardVerticalOffset={isWeb ? 0 : Platform.OS === 'ios' ? 0 : 100}
+            enabled
           >
             <ScrollView
-              contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: formPadding }}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={scrollContentStyle}
+              showsVerticalScrollIndicator={!isWeb}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={isWeb ? 'none' : 'on-drag'}
               refreshControl={<RefreshControl
                 colors={[Colors.primary[500]]}
                 refreshing={isloading}
                 onRefresh={__onLoad}
               />}
             >
-              <View style={{ width: formMaxWidth, alignSelf: 'center', marginTop: isWeb ? 16 : 24 }}>
+              <View style={{ width: formMaxWidth, alignSelf: 'center', marginTop: isWeb ? Spacing.md : Spacing.lg, flex: 1, minWidth: 0 }}>
                 <View style={section}>
-                  <Text style={sectionTitle}>Rechercher un membre existant</Text>
+                  <Text style={[sectionTitle, { fontSize: titleFontSize }]}>Rechercher un membre existant</Text>
                   <Text style={sectionSubtitle}>Entrez un nom pour rechercher dans la base de données</Text>
 
                   <View style={fieldGroup}>
@@ -674,10 +901,10 @@ export const AddmemberScreen = ({ route, navigation }) => {
                         borderColor: Colors.primary[500],
                         borderWidth: 1,
                         backgroundColor: Colors.surface.primary,
-                        paddingHorizontal: 20,
+                        paddingHorizontal: Spacing.md,
                         height: inputHeight,
                         borderRadius: BorderRadius.input,
-                        fontFamily: "mons-b",
+                        fontFamily: Typography.fontFamily.bold,
                         width: "100%",
                         color: Colors.primary[500],
                         fontSize: inputFontSize
@@ -686,17 +913,17 @@ export const AddmemberScreen = ({ route, navigation }) => {
                   </View>
                   <TouchableHighlight
                     underlayColor={Colors.primary[600]}
-                    style={[btnPrimaryLg, { backgroundColor: Colors.primary[500], marginVertical: 16, elevation: 4, height: inputHeight, ...Shadows.shadow.sm }]}
+                    style={[btnPrimaryLg, { backgroundColor: Colors.primary[500], marginVertical: Spacing.md, elevation: 4, height: buttonHeight, ...Shadows.shadow.sm }]}
                     activeOpacity={0.9}
                   >
-                    <View style={{ flexDirection: "row", alignContent: "center", alignItems: "center", justifyContent: "center", paddingVertical: 5, height: "100%" }}>
+                    <View style={{ flexDirection: "row", alignContent: "center", alignItems: "center", justifyContent: "center", paddingVertical: Spacing.xs, height: "100%" }}>
                       <Ionicons name='search' color={Colors.whiteColor} size={22} />
-                      <Text style={{ fontFamily: "mons-b", color: Colors.whiteColor, paddingLeft: 10, fontSize: inputFontSize, fontWeight: '600' }}>Chercher</Text>
+                      <Text style={{ fontFamily: Typography.fontFamily.bold, color: Colors.whiteColor, paddingLeft: Spacing.sm, fontSize: inputFontSize, fontWeight: '600' }}>Chercher</Text>
                     </View>
                   </TouchableHighlight>
-                  <View style={{ width: "100%", marginTop: 16 }}>
+                  <View style={{ width: "100%", marginTop: Spacing.md }}>
                     <FlatList
-                      contentContainerStyle={{ paddingBottom: 40 }}
+                      contentContainerStyle={{ paddingBottom: Spacing.xl }}
                       ListEmptyComponent={<EmptyList />}
                       data={list}
                       renderItem={renderItem}
@@ -708,7 +935,6 @@ export const AddmemberScreen = ({ route, navigation }) => {
           </KeyboardAvoidingView>
         )}
       </View>
-      {/* ============================================== */}
     </View>
   )
 }
