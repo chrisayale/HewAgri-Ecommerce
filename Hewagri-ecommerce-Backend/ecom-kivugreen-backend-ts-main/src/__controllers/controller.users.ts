@@ -200,18 +200,12 @@ export const __controllerUsers = {
             //     return Responder(res, HttpStatusCode.NotAcceptable, "Invalid phone value: NaN");
             // }
 
-            // Associations déjà initialisées dans src/__models/associations.ts
+            // Use associations already initialized in src/__models/associations.ts
             // Users.belongsToMany(Roles, { through: Hasroles, foreignKey: 'TblEcomUserId', otherKey: 'TblEcomRoleId' });
             // Roles.belongsToMany(Users, { through: Hasroles, foreignKey: 'TblEcomRoleId', otherKey: 'TblEcomUserId' });
-
-            Provinces.hasOne(Users, { foreignKey: "id" });
-            Users.belongsTo(Provinces, { foreignKey: "idprovince" });
-
-            Territoires.hasOne(Users, { foreignKey: "id" });
-            Users.belongsTo(Territoires, { foreignKey: "idterritoire" });
-
-            Villages.hasOne(Users, { foreignKey: "id" });
-            Users.belongsTo(Villages, { foreignKey: "idvillage" });
+            // Users.belongsTo(Provinces, { foreignKey: 'idprovince', as: 'province' });
+            // Users.belongsTo(Territoires, { foreignKey: 'idterritoire', as: 'territoire' });
+            // Users.belongsTo(Villages, { foreignKey: 'idvillage', as: 'village' });
 
             const user = await Users.findOne({
                 where: {
@@ -228,16 +222,19 @@ export const __controllerUsers = {
                     },
                     {
                         model: Provinces,
+                        as: 'province',
                         required: false,
                         attributes: ['id', 'province']
                     },
                     {
                         model: Territoires,
+                        as: 'territoire',
                         required: false,
                         attributes: ['id', 'territoire']
                     },
                     {
                         model: Villages,
+                        as: 'village',
                         required: false,
                         attributes: ['id', 'village']
                     }
@@ -249,7 +246,8 @@ export const __controllerUsers = {
                 return Responder(res, HttpStatusCode.Forbidden, "Phone | Email or Password incorrect!");
             }
 
-            const { password: hashedPassword, isvalidated, __tbl_ecom_roles } = user.toJSON() as any;
+            const userJson = user.toJSON() as any;
+            const { password: hashedPassword, isvalidated, __tbl_ecom_roles } = userJson;
             const roles = __tbl_ecom_roles.map((role: any) => role['id']);
 
             comparePWD({

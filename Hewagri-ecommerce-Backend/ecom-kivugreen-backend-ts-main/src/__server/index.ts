@@ -15,11 +15,25 @@ import { ServiceImage } from '../__services/services.images';
 import { log } from 'console';
 import { Server, Socket } from 'socket.io';
 import { initAssociations } from '../__models/associations';
+import { initializeDatabase, runStartupSeedIfEnabled } from '../__databases/connecte';
 
 dotenv.config();
 
-// Initialiser les associations Sequelize une seule fois au démarrage
-initAssociations();
+// Initialize database connection, associations, and startup seed
+async function initializeApp() {
+    await initializeDatabase();
+
+    // Initialiser les associations Sequelize une seule fois au démarrage
+    initAssociations();
+
+    // Run startup seed after models and associations are loaded
+    await runStartupSeedIfEnabled();
+}
+
+initializeApp().catch((error) => {
+    console.error('❌ Failed to initialize application:', error);
+    process.exit(1);
+});
 
 const { APP_NAME, APP_PORT, APP_VERSION } = process.env;
 
@@ -43,6 +57,7 @@ const corsOptions = {
         "http://localhost:3000",    // Frontend Client
         "http://localhost:4003",    // Frontend Admin
         "http://localhost:4005",    // Mobile POS PWA
+        "http://localhost:8081",    // Expo Web (primary)
         "http://localhost:8084",    // Expo Metro Web
         "http://localhost:8088",    // Expo Metro Web (alt port)
         "http://localhost:8089",
@@ -52,6 +67,7 @@ const corsOptions = {
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4003",
         "http://127.0.0.1:4005",
+        "http://127.0.0.1:8081",    // Expo Web (primary)
         "http://127.0.0.1:8084",
         "http://127.0.0.1:8088",
         "http://127.0.0.1:8089",
